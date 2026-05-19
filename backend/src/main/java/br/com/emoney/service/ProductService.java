@@ -3,6 +3,8 @@ package br.com.emoney.service;
 import br.com.emoney.dto.ProductPurchaseResponse;
 import br.com.emoney.dto.StudentResponse;
 import br.com.emoney.dto.ProductRequest;
+import br.com.emoney.messaging.PurchaseEventProducer;
+import br.com.emoney.messaging.PurchaseNotification;
 import br.com.emoney.model.AuthSession;
 import br.com.emoney.model.Company;
 import br.com.emoney.model.Product;
@@ -30,13 +32,15 @@ public class ProductService {
     private final StudentRepository studentRepository;
     private final CompanyService companyService;
     private final ValidationService validationService;
+    private final PurchaseEventProducer purchaseEventProducer;
 
-    public ProductService(ProductRepository productRepository, ProductPurchaseRepository purchaseRepository, StudentRepository studentRepository, CompanyService companyService, ValidationService validationService) {
+    public ProductService(ProductRepository productRepository, ProductPurchaseRepository purchaseRepository, StudentRepository studentRepository, CompanyService companyService, ValidationService validationService, PurchaseEventProducer purchaseEventProducer) {
         this.productRepository = productRepository;
         this.purchaseRepository = purchaseRepository;
         this.studentRepository = studentRepository;
         this.companyService = companyService;
         this.validationService = validationService;
+        this.purchaseEventProducer = purchaseEventProducer;
     }
 
     public List<Product> list() {
@@ -103,13 +107,22 @@ public class ProductService {
         student.setSaldoMoedas(student.getSaldoMoedas() - product.getCustoMoedas());
         Student saved = studentRepository.save(student);
 
-        purchaseRepository.save(new ProductPurchase(
+        ProductPurchase purchase = purchaseRepository.save(new ProductPurchase(
                 product.getId(),
                 product.getCompanyId(),
                 student.getId(),
                 product.getNome(),
                 student.getNome(),
                 student.getEmail(),
+                product.getCustoMoedas()
+        ));
+
+        purchaseEventProducer.publish(new PurchaseNotification(
+                purchase.getId(),
+                student.getId(),
+                student.getNome(),
+                student.getEmail(),
+                product.getNome(),
                 product.getCustoMoedas()
         ));
 

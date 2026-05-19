@@ -3,6 +3,7 @@ import DevLogin from "../components/DevLogin.jsx";
 import PenguinCanvas from "../components/PenguinCanvas.jsx";
 import { DEFAULT_INSTITUTIONS, mergeInstitutions } from "../services/institutionOptions.js";
 import { studentService } from "../services/studentService.js";
+import { buscarCep } from "../services/viaCepService.js";
 
 const emptyRegisterForm = {
   nome: "", email: "", cpf: "", rg: "", endereco: "", instituicao: "", curso: "", senha: "",
@@ -21,6 +22,10 @@ function AuthPage({ onLogin, onRegister, onCompanyRegister, onInstitutionRegiste
   const [courses, setCourses] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [cepAluno, setCepAluno] = useState("");
+  const [buscandoCepAluno, setBuscandoCepAluno] = useState(false);
+  const [cepInstituicao, setCepInstituicao] = useState("");
+  const [buscandoCepInstituicao, setBuscandoCepInstituicao] = useState(false);
 
   useEffect(() => {
     studentService.institutions().then((data) => setInstitutions(mergeInstitutions(data))).catch(() => setInstitutions(DEFAULT_INSTITUTIONS));
@@ -56,6 +61,30 @@ function AuthPage({ onLogin, onRegister, onCompanyRegister, onInstitutionRegiste
   function updateRegister(name, value) { setRegisterForm((c) => ({ ...c, [name]: value })); }
   function updateCompany(name, value) { setCompanyForm((c) => ({ ...c, [name]: value })); }
   function updateInstitution(name, value) { setInstitutionForm((c) => ({ ...c, [name]: value })); }
+
+  async function handleBuscarCepAluno() {
+    setBuscandoCepAluno(true);
+    try {
+      const endereco = await buscarCep(cepAluno);
+      updateRegister("endereco", endereco);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setBuscandoCepAluno(false);
+    }
+  }
+
+  async function handleBuscarCepInstituicao() {
+    setBuscandoCepInstituicao(true);
+    try {
+      const endereco = await buscarCep(cepInstituicao);
+      updateInstitution("endereco", endereco);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setBuscandoCepInstituicao(false);
+    }
+  }
 
   return (
     <main className="auth-layout">
@@ -154,6 +183,28 @@ function AuthPage({ onLogin, onRegister, onCompanyRegister, onInstitutionRegiste
                     <input inputMode="numeric" maxLength="9" minLength="9" pattern="\d{9}" placeholder="000000000" value={registerForm.rg} onChange={(e) => updateRegister("rg", onlyDigits(e.target.value).slice(0, 9))} required />
                   </label>
                 </div>
+                <label className="auth-field">
+                  <span>CEP</span>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <input
+                      inputMode="numeric"
+                      maxLength="8"
+                      placeholder="00000000"
+                      value={cepAluno}
+                      onChange={(e) => setCepAluno(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      className="auth-choice-secondary"
+                      style={{ padding: "0 12px", whiteSpace: "nowrap" }}
+                      onClick={handleBuscarCepAluno}
+                      disabled={buscandoCepAluno || cepAluno.length !== 8}
+                    >
+                      {buscandoCepAluno ? "..." : "Buscar"}
+                    </button>
+                  </div>
+                </label>
                 <label className="auth-field">
                   <span>Endereço</span>
                   <input value={registerForm.endereco} onChange={(e) => updateRegister("endereco", e.target.value)} required />
@@ -257,6 +308,28 @@ function AuthPage({ onLogin, onRegister, onCompanyRegister, onInstitutionRegiste
                 <label className="auth-field">
                   <span>Telefone</span>
                   <input value={institutionForm.telefone} onChange={(e) => updateInstitution("telefone", onlyDigits(e.target.value).slice(0, 11))} required />
+                </label>
+                <label className="auth-field">
+                  <span>CEP</span>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <input
+                      inputMode="numeric"
+                      maxLength="8"
+                      placeholder="00000000"
+                      value={cepInstituicao}
+                      onChange={(e) => setCepInstituicao(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      className="auth-choice-secondary"
+                      style={{ padding: "0 12px", whiteSpace: "nowrap" }}
+                      onClick={handleBuscarCepInstituicao}
+                      disabled={buscandoCepInstituicao || cepInstituicao.length !== 8}
+                    >
+                      {buscandoCepInstituicao ? "..." : "Buscar"}
+                    </button>
+                  </div>
                 </label>
                 <label className="auth-field">
                   <span>Endereço</span>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { DEFAULT_INSTITUTIONS, mergeInstitutions } from "../services/institutionOptions.js";
 import { studentService } from "../services/studentService.js";
+import { buscarCep } from "../services/viaCepService.js";
 
 const emptyForm = {
   nome: "",
@@ -18,6 +19,8 @@ function AccountForm({ user, onSave, onToast }) {
   const [institutions, setInstitutions] = useState(DEFAULT_INSTITUTIONS);
   const [courses, setCourses] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [cep, setCep] = useState("");
+  const [buscandoCep, setBuscandoCep] = useState(false);
 
   useEffect(() => {
     studentService.institutions().then((data) => setInstitutions(mergeInstitutions(data))).catch(() => setInstitutions(DEFAULT_INSTITUTIONS));
@@ -42,6 +45,18 @@ function AccountForm({ user, onSave, onToast }) {
 
   function update(name, value) {
     setForm((current) => ({ ...current, [name]: value }));
+  }
+
+  async function handleBuscarCep() {
+    setBuscandoCep(true);
+    try {
+      const endereco = await buscarCep(cep);
+      update("endereco", endereco);
+    } catch (err) {
+      onToast({ message: err.message, type: "error" });
+    } finally {
+      setBuscandoCep(false);
+    }
   }
 
   return (
@@ -85,6 +100,27 @@ function AccountForm({ user, onSave, onToast }) {
             onChange={(event) => update("rg", onlyDigits(event.target.value).slice(0, 9))}
             required
           />
+        </label>
+        <label>
+          CEP
+          <div style={{ display: "flex", gap: "8px" }}>
+            <input
+              inputMode="numeric"
+              maxLength="8"
+              placeholder="00000000"
+              value={cep}
+              onChange={(e) => setCep(e.target.value.replace(/\D/g, "").slice(0, 8))}
+              style={{ flex: 1 }}
+            />
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={handleBuscarCep}
+              disabled={buscandoCep || cep.length !== 8}
+            >
+              {buscandoCep ? "Buscando..." : "Buscar"}
+            </button>
+          </div>
         </label>
         <label>
           Endereco

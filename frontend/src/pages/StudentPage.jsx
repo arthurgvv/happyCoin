@@ -3,6 +3,7 @@ import AccountForm from "../components/AccountForm.jsx";
 import BalanceBanner from "../components/BalanceBanner.jsx";
 import Navbar from "../components/Navbar.jsx";
 import ProductGrid from "../components/ProductGrid.jsx";
+import QRCodeModal from "../components/QRCodeModal.jsx";
 import { useProducts } from "../hooks/useProducts.js";
 import { productService } from "../services/productService.js";
 import { studentService } from "../services/studentService.js";
@@ -15,6 +16,7 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
   const [purchases, setPurchases] = useState([]);
   const [loadingTransfers, setLoadingTransfers] = useState(false);
   const [loadingPurchases, setLoadingPurchases] = useState(false);
+  const [qrPurchase, setQrPurchase] = useState(null);
 
   useEffect(() => {
     if (user.ultimoAviso) {
@@ -112,6 +114,7 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
                       <th>Produto</th>
                       <th>Moedas</th>
                       <th>Data</th>
+                      <th>Resgate</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -120,6 +123,16 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
                         <td>{p.productName}</td>
                         <td style={{ color: "var(--error, #e53e3e)", fontWeight: 600 }}>-{p.custoMoedas}</td>
                         <td>{p.criadoEm ? new Date(p.criadoEm).toLocaleString("pt-BR") : "—"}</td>
+                        <td>
+                          <button
+                            className="button button-secondary"
+                            style={{ fontSize: "12px", padding: "4px 10px" }}
+                            type="button"
+                            onClick={() => setQrPurchase(p)}
+                          >
+                            Ver QR
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -175,6 +188,8 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
           <AccountForm user={user} onSave={onUpdateUser} onToast={onToast} />
         )}
       </main>
+
+      <QRCodeModal purchase={qrPurchase} onClose={() => setQrPurchase(null)} />
     </div>
   );
 }
