@@ -142,7 +142,7 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
       : "";
 
   return (
-    <div className="app-shell">
+    <div className="app-shell student-shell">
       <Navbar
         activePage={activePage}
         onChangePage={setActivePage}
@@ -210,6 +210,7 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
                 walletBalance={user.saldoMoedas}
                 purchasingId={purchasingId}
                 onPurchase={handlePurchase}
+                showFilter={false}
               />
             </>
           )}

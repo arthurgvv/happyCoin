@@ -239,7 +239,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
   }, {});
 
   return (
-    <div className="app-shell">
+    <div className="app-shell institution-shell">
       <Navbar
         activePage={activePage}
         onChangePage={setActivePage}

@@ -5273,3 +5273,829 @@ textarea.settings-input {
   background: var(--surface-soft);
   color: var(--muted);
 }
+
+/* Student mobile layout */
+@media (max-width: 768px) {
+  .student-shell {
+    overflow-x: hidden;
+  }
+
+  .student-shell .prof-layout {
+    width: 100%;
+    min-width: 0;
+    margin-left: 0;
+    padding-bottom: 78px;
+    overflow-x: hidden;
+  }
+
+  .student-shell .prof-topbar {
+    height: auto;
+    min-height: 64px;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+
+  .student-shell .prof-topbar-title {
+    max-width: 38%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .student-shell .prof-search {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .student-shell .prof-search input {
+    width: 100%;
+    max-width: none;
+    min-height: 40px;
+    padding-inline: 12px;
+  }
+
+  .student-shell .prof-main {
+    width: 100%;
+    min-width: 0;
+    padding: 26px 16px 18px;
+    gap: 20px;
+  }
+
+  .student-shell .prof-greeting,
+  .student-shell .products-section,
+  .student-shell .product-card {
+    min-width: 0;
+  }
+
+  .student-shell .prof-greeting h2 {
+    font-size: 1.5rem;
+  }
+
+  .student-shell .prof-greeting p {
+    overflow-wrap: anywhere;
+  }
+
+  .student-shell .prof-stat-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .student-shell .prof-stat-card {
+    min-width: 0;
+    min-height: 132px;
+    padding: 16px 14px;
+    border-radius: 18px;
+    gap: 10px;
+  }
+
+  .student-shell .prof-stat-card::after {
+    right: -58px;
+    bottom: -62px;
+    width: 116px;
+    height: 116px;
+  }
+
+  .student-shell .prof-stat-card .stat-card-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .student-shell .prof-stat-card .eyebrow {
+    margin-top: 8px !important;
+    font-size: 0.58rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .student-shell .prof-stat-card .stat-value {
+    font-size: 1.8rem;
+  }
+
+  .student-shell .products-section {
+    padding: 20px;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  .student-shell .product-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    margin-top: 20px;
+  }
+
+  .student-shell .product-card {
+    min-height: 0;
+    border-radius: 16px;
+  }
+
+  .student-shell .product-image-wrap {
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .student-shell .product-card img {
+    max-height: 210px;
+  }
+
+  .student-shell .product-body {
+    padding: 22px 20px 4px;
+  }
+
+  .student-shell .product-footer {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    padding: 10px 20px 22px;
+  }
+
+  .student-shell .button-buy {
+    width: 100%;
+  }
+
+  .student-shell .navbar {
+    gap: 6px;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+  }
+
+  .student-shell .nav-actions {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2px;
+    overflow: visible;
+  }
+
+  .student-shell .nav-actions button {
+    min-width: 0;
+    min-height: 56px;
+    width: 100%;
+    padding: 5px 2px;
+    font-size: 0.56rem;
+    line-height: 1.1;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .student-shell .nav-actions button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .student-shell .nav-user {
+    display: none;
+  }
+
+  .student-shell .nav-logout button {
+    min-width: 46px !important;
+    width: 46px !important;
+    padding: 4px 2px !important;
+    font-size: 0.55rem !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .student-shell .prof-topbar-title {
+    max-width: 34%;
+    font-size: 0.86rem;
+  }
+
+  .student-shell .prof-stat-cards {
+    gap: 8px;
+  }
+
+  .student-shell .prof-stat-card {
+    padding: 14px 10px;
+  }
+
+  .student-shell .prof-stat-card .stat-value {
+    font-size: 1.55rem;
+  }
+}
+
+/* Shared mobile layout for authenticated portals */
+@media (max-width: 768px) {
+  .professor-shell,
+  .company-shell,
+  .institution-shell {
+    overflow-x: hidden;
+  }
+
+  .professor-shell .prof-layout,
+  .company-shell .prof-layout,
+  .institution-shell .student-home {
+    width: 100%;
+    min-width: 0;
+    margin-left: 0;
+    padding-bottom: 82px;
+    overflow-x: hidden;
+  }
+
+  .institution-shell .student-home {
+    padding: 24px 16px 92px;
+  }
+
+  .professor-shell .prof-main,
+  .company-shell .prof-main {
+    width: 100%;
+    min-width: 0;
+    padding: 24px 16px 92px;
+    gap: 20px;
+  }
+
+  .professor-shell .prof-topbar,
+  .company-shell .prof-topbar {
+    height: auto;
+    min-height: 64px;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+
+  .professor-shell .prof-topbar-title,
+  .company-shell .prof-topbar-title {
+    max-width: 44%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .professor-shell .prof-search,
+  .company-shell .prof-search {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .professor-shell .prof-search input,
+  .company-shell .prof-search input {
+    width: 100%;
+    max-width: none;
+    min-height: 40px;
+    padding-inline: 12px;
+  }
+
+  .professor-shell .prof-greeting,
+  .company-shell .prof-greeting,
+  .institution-shell .professor-panel,
+  .institution-shell .products-section,
+  .institution-shell .account-panel {
+    min-width: 0;
+  }
+
+  .professor-shell .prof-greeting h2,
+  .company-shell .prof-greeting h2 {
+    font-size: 1.45rem;
+    line-height: 1.15;
+  }
+
+  .professor-shell .prof-greeting p,
+  .company-shell .prof-greeting p,
+  .settings-page-header p {
+    overflow-wrap: anywhere;
+  }
+
+  .professor-shell .prof-stat-cards,
+  .company-shell .prof-stat-cards,
+  .institution-shell .stat-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .professor-shell .prof-stat-card,
+  .company-shell .prof-stat-card,
+  .institution-shell .stat-card {
+    min-width: 0;
+    min-height: 148px;
+    padding: 18px 16px;
+    border-radius: 18px;
+    gap: 12px;
+  }
+
+  .professor-shell .prof-stat-card .eyebrow,
+  .company-shell .prof-stat-card .eyebrow,
+  .institution-shell .stat-card .eyebrow {
+    font-size: 0.62rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .professor-shell .prof-stat-card .stat-value,
+  .company-shell .prof-stat-card .stat-value,
+  .institution-shell .stat-card .stat-value {
+    font-size: 1.85rem;
+  }
+
+  .professor-panel,
+  .products-section,
+  .account-panel,
+  .settings-profile-card,
+  .settings-creds-card,
+  .settings-section-card {
+    min-width: 0;
+  }
+
+  .professor-shell .professor-panel,
+  .company-shell .professor-panel,
+  .institution-shell .professor-panel,
+  .professor-shell .products-section,
+  .company-shell .products-section,
+  .institution-shell .products-section,
+  .professor-shell .account-panel,
+  .company-shell .account-panel,
+  .institution-shell .account-panel {
+    padding: 20px;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  .section-heading,
+  .list-toolbar,
+  .settings-section-header,
+  .settings-2fa-row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .settings-page-header {
+    margin-bottom: 18px;
+  }
+
+  .settings-page-header h2 {
+    font-size: 1.45rem;
+    line-height: 1.12;
+  }
+
+  .settings-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .settings-left,
+  .settings-right {
+    min-width: 0;
+  }
+
+  .settings-profile-card,
+  .settings-creds-card,
+  .settings-section-card {
+    padding: 20px;
+    border-radius: 18px;
+  }
+
+  .settings-form-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings-form-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .settings-form-actions .button,
+  .settings-pwd-btn {
+    width: 100%;
+  }
+
+  .settings-section-meta {
+    white-space: normal;
+  }
+
+  .table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 520px;
+  }
+
+  .product-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .product-card {
+    min-width: 0;
+  }
+
+  .product-footer {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .button-buy,
+  .row-actions .button {
+    width: 100%;
+  }
+
+  .professor-shell .navbar,
+  .company-shell .navbar,
+  .institution-shell .navbar {
+    gap: 6px;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+  }
+
+  .professor-shell .nav-actions,
+  .company-shell .nav-actions,
+  .institution-shell .nav-actions {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2px;
+    overflow: visible;
+  }
+
+  .professor-shell .nav-actions button,
+  .company-shell .nav-actions button,
+  .institution-shell .nav-actions button {
+    min-width: 0;
+    min-height: 56px;
+    width: 100%;
+    padding: 5px 2px;
+    font-size: 0.55rem;
+    line-height: 1.1;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .professor-shell .nav-actions button svg,
+  .company-shell .nav-actions button svg,
+  .institution-shell .nav-actions button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .professor-shell .nav-user,
+  .company-shell .nav-user,
+  .institution-shell .nav-user {
+    display: none;
+  }
+
+  .professor-shell .nav-logout button,
+  .company-shell .nav-logout button,
+  .institution-shell .nav-logout button {
+    min-width: 46px !important;
+    width: 46px !important;
+    padding: 4px 2px !important;
+    font-size: 0.55rem !important;
+  }
+
+  .modal-card,
+  .distribution-modal {
+    width: calc(100vw - 28px);
+    max-width: calc(100vw - 28px);
+    max-height: calc(100vh - 28px);
+    overflow: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .professor-shell .prof-stat-cards,
+  .company-shell .prof-stat-cards,
+  .institution-shell .stat-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .professor-shell .prof-topbar-title,
+  .company-shell .prof-topbar-title {
+    max-width: 38%;
+    font-size: 0.86rem;
+  }
+}
+
+/* Professor mobile refinements */
+@media (max-width: 768px) {
+  .professor-shell .prof-stat-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .professor-shell .prof-stat-card {
+    min-height: 164px;
+  }
+
+  .professor-shell .prof-stat-card::after {
+    right: -48px;
+    bottom: -54px;
+    width: 136px;
+    height: 136px;
+  }
+
+  .professor-shell .prof-dashboard-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .professor-shell .prof-activity,
+  .professor-shell .prof-quick-actions,
+  .professor-shell .wallet-distributions,
+  .professor-shell .student-dir {
+    min-width: 0;
+  }
+
+  .professor-shell .prof-activity {
+    padding: 20px;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  .professor-shell .prof-activity-header,
+  .professor-shell .sda-header,
+  .professor-shell .wallet-dist-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .professor-shell .prof-activity-header .button,
+  .professor-shell .sda-header .button {
+    width: 100%;
+  }
+
+  .professor-shell .activity-item {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .professor-shell .activity-desc {
+    display: -webkit-box;
+    overflow: hidden;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .professor-shell .activity-meta {
+    align-items: flex-end;
+    max-width: 86px;
+  }
+
+  .professor-shell .quick-action-card {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .professor-shell .budget-bar-info {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .professor-shell .wallet-top-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .professor-shell .wallet-balance-card,
+  .professor-shell .wallet-stat-card {
+    min-width: 0;
+    border-radius: 18px;
+  }
+
+  .professor-shell .wallet-balance-card {
+    min-height: 0;
+    padding: 22px;
+    gap: 18px;
+  }
+
+  .professor-shell .wallet-balance-amount {
+    flex-wrap: wrap;
+  }
+
+  .professor-shell .wallet-balance-number {
+    font-size: 2.7rem;
+  }
+
+  .professor-shell .wallet-balance-unit {
+    font-size: 1.05rem;
+  }
+
+  .professor-shell .wallet-balance-note {
+    max-width: 20ch;
+  }
+
+  .professor-shell .wallet-balance-coin-icon {
+    right: -34px;
+    top: auto;
+    bottom: -32px;
+    width: 128px;
+    height: 128px;
+    transform: none;
+  }
+
+  .professor-shell .wallet-balance-actions,
+  .professor-shell .wallet-balance-card.wallet-balance-card-gold .wallet-balance-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .professor-shell .wallet-balance-actions .button,
+  .professor-shell .wallet-balance-card.wallet-balance-card-gold .wallet-balance-actions .button {
+    width: 100%;
+  }
+
+  .professor-shell .wallet-stat-stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .professor-shell .wallet-stat-card {
+    min-height: 148px;
+    padding: 20px;
+  }
+
+  .professor-shell .wallet-stat-card::after {
+    right: -52px;
+    bottom: -58px;
+  }
+
+  .professor-shell .wallet-stat-value {
+    font-size: 1.45rem;
+  }
+
+  .professor-shell .wallet-distributions {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .professor-shell .wallet-dist-table {
+    min-width: 660px;
+  }
+
+  .professor-shell .wallet-dist-table th,
+  .professor-shell .wallet-dist-table td {
+    padding-inline: 16px;
+  }
+
+  .professor-shell .student-dir {
+    padding: 24px 0 0;
+    overflow-x: hidden;
+  }
+
+  .professor-shell .student-dir-header,
+  .professor-shell .student-dir-filters,
+  .professor-shell .student-carousel,
+  .professor-shell .sda-section {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .professor-shell .student-dir-filters {
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .professor-shell .sdf-tab {
+    min-height: 36px;
+    white-space: normal;
+  }
+
+  .professor-shell .sdf-tab-filter {
+    margin-left: 0;
+    justify-content: center;
+  }
+
+  .professor-shell .student-carousel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    overflow: visible;
+    padding-bottom: 0;
+    scroll-snap-type: none;
+  }
+
+  .professor-shell .student-card-dir {
+    width: 100%;
+    min-width: 0;
+    flex: none;
+    scroll-snap-align: none;
+  }
+
+  .professor-shell .scd-top,
+  .professor-shell .scd-actions {
+    min-width: 0;
+  }
+
+  .professor-shell .scd-name,
+  .professor-shell .scd-class-chip {
+    overflow-wrap: anywhere;
+  }
+
+  .professor-shell .scd-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .professor-shell .sda-section .table-wrap table {
+    min-width: 680px;
+  }
+}
+
+/* Company mobile refinements */
+@media (max-width: 768px) {
+  .company-shell .company-welcome-card {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+    padding: 22px;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  .company-shell .company-welcome-identity {
+    align-items: flex-start;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .company-shell .company-logo-bubble {
+    width: 58px;
+    height: 58px;
+    font-size: 1rem;
+    box-shadow: inset 0 0 0 6px rgba(255,255,255,.34);
+  }
+
+  .company-shell .company-welcome-card h2 {
+    font-size: 1.28rem;
+    line-height: 1.15;
+  }
+
+  .company-shell .company-welcome-card p {
+    overflow-wrap: anywhere;
+  }
+
+  .company-shell .company-new-product-btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .company-shell .prof-stat-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .company-shell .prof-stat-card {
+    min-height: 164px;
+  }
+
+  .company-shell .prof-stat-card::after {
+    right: -48px;
+    bottom: -54px;
+    width: 136px;
+    height: 136px;
+  }
+
+  .company-shell .prof-dashboard-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .company-shell .prof-activity,
+  .company-shell .prof-quick-actions {
+    min-width: 0;
+  }
+
+  .company-shell .prof-activity {
+    padding: 20px;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  .company-shell .prof-activity-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .company-shell .prof-activity-header .button {
+    width: 100%;
+  }
+
+  .company-shell .activity-item {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .company-shell .activity-desc {
+    display: -webkit-box;
+    overflow: hidden;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .company-shell .activity-meta {
+    align-items: flex-end;
+    max-width: 88px;
+  }
+
+  .company-shell .quick-action-card {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .company-shell .budget-bar-info {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}

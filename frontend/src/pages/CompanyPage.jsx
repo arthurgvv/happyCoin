@@ -191,7 +191,7 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
       : "Configurações";
 
   return (
-    <div className="app-shell">
+    <div className="app-shell company-shell">
       <Navbar
         activePage={activePage}
         onChangePage={setActivePage}

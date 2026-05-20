@@ -293,7 +293,7 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
   const userInitials = initials(user.nome);
 
   return (
-    <div className="app-shell">
+    <div className="app-shell professor-shell">
       <Navbar
         activePage={activePage}
         onChangePage={setActivePage}
