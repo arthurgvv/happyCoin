@@ -218,7 +218,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
       if (profileForm.senha) payload.senha = profileForm.senha;
       if (profileForm.telefone) payload.telefone = profileForm.telefone;
       if (profileForm.endereco) payload.endereco = profileForm.endereco;
-      if (profileForm.photoUrl) payload.photoUrl = profileForm.photoUrl;
+      if (profileForm.photoUrl !== null) payload.photoUrl = profileForm.photoUrl;
 
       const updated = await institutionService.update(payload);
       onUpdateUser(updated);
@@ -862,7 +862,128 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
           );
         })()}
 
-        {activePage === "profile" && (
+        {activePage === "profile" && (() => {
+          const currentPhoto = profileForm.photoUrl || user.photoUrl;
+          const updateProfile = (name, value) => setProfileForm((current) => ({ ...current, [name]: value }));
+
+          return (
+            <>
+              <div className="settings-page-header">
+                <h2>Configurações da Instituição</h2>
+                <p>Gerencie identidade institucional, contato e segurança da conta.</p>
+              </div>
+
+              <div className="settings-layout">
+                <div className="settings-left">
+                  <div className="settings-profile-card">
+                    <div className="settings-profile-photo-wrap">
+                      <div className="settings-profile-photo">
+                        {currentPhoto ? <img src={currentPhoto} alt="Logo" /> : initials(user.nome)}
+                      </div>
+                      <label className="settings-photo-badge">
+                        <CameraIcon />
+                        <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (event) => {
+                          const file = event.target.files?.[0];
+                          if (!file) return;
+                          updateProfile("photoUrl", await readFileAsDataUrl(file));
+                        }} />
+                      </label>
+                    </div>
+                    <h3 className="settings-profile-name">{user.nome}</h3>
+                    <p className="settings-profile-role">INSTITUIÇÃO</p>
+                    <label className="button settings-update-photo-btn">
+                      Atualizar Logo
+                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (event) => {
+                        const file = event.target.files?.[0];
+                        if (!file) return;
+                        updateProfile("photoUrl", await readFileAsDataUrl(file));
+                      }} />
+                    </label>
+                    <button className="button settings-remove-photo-btn" type="button" onClick={() => updateProfile("photoUrl", "")}>
+                      Remover
+                    </button>
+                  </div>
+
+                  <div className="settings-creds-card">
+                    <div className="settings-creds-title">
+                      <ShieldIcon />
+                      Credenciais
+                    </div>
+                    <div className="settings-creds-row">
+                      <span className="settings-creds-label">Status</span>
+                      <span className="settings-status-chip">Ativa</span>
+                    </div>
+                    <div className="settings-creds-row">
+                      <span className="settings-creds-label">Identificador</span>
+                      <span className="settings-creds-balance">{user.identificadorInstitucional || "—"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="settings-right">
+                  <div className="settings-section-card">
+                    <div className="settings-section-header">
+                      <h2>Informações Institucionais</h2>
+                      <span className="settings-section-meta">Dados atuais</span>
+                    </div>
+                    <div className="settings-divider" />
+                    <form className="settings-form" onSubmit={handleSaveProfile}>
+                      <div className="settings-form-row">
+                        <div className="settings-form-field">
+                          <label className="settings-label">Nome da Instituição</label>
+                          <input className="settings-input" value={profileForm.nome} placeholder={user.nome} onChange={(event) => updateProfile("nome", event.target.value)} />
+                        </div>
+                        <div className="settings-form-field">
+                          <label className="settings-label">Email Institucional</label>
+                          <input className="settings-input" type="email" value={profileForm.email} placeholder={user.email} onChange={(event) => updateProfile("email", event.target.value)} />
+                        </div>
+                      </div>
+                      <div className="settings-form-row">
+                        <div className="settings-form-field">
+                          <label className="settings-label">Telefone</label>
+                          <input className="settings-input" value={profileForm.telefone} placeholder={user.telefone || "(00) 0000-0000"} onChange={(event) => updateProfile("telefone", event.target.value)} />
+                        </div>
+                        <div className="settings-form-field">
+                          <label className="settings-label">Endereço</label>
+                          <input className="settings-input" value={profileForm.endereco} placeholder={user.endereco || "Rua, Número, Cidade - UF"} onChange={(event) => updateProfile("endereco", event.target.value)} />
+                        </div>
+                      </div>
+                      <div className="settings-divider" />
+                      <div className="settings-form-actions">
+                        <button className="button button-secondary" type="button" onClick={() => setProfileForm(emptyProfile)}>Descartar</button>
+                        <button className="button settings-save-btn" type="submit" disabled={savingProfile}>
+                          {savingProfile ? "Salvando..." : "Salvar Alterações"}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  <div className="settings-section-card">
+                    <h2>Segurança e Senha</h2>
+                    <p className="settings-security-desc">Atualize a senha para proteger professores, alunos e dados institucionais.</p>
+                    <form onSubmit={handleSaveProfile}>
+                      <div className="settings-form-field">
+                        <label className="settings-label">Nova Senha</label>
+                        <div className="profile-pwd-wrap">
+                          <input className="settings-input" type={showPassword ? "text" : "password"} value={profileForm.senha} placeholder="Letras e números" onChange={(event) => updateProfile("senha", event.target.value)} />
+                          <button type="button" className="profile-pwd-eye" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>
+                            {showPassword ? "Ocultar" : "Mostrar"}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="settings-form-actions" style={{ marginTop: 14 }}>
+                        <button className="button settings-save-btn" type="submit" disabled={savingProfile}>
+                          {savingProfile ? "Salvando..." : "Confirmar Nova Senha"}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </>
+          );
+        })()}
+        {false && (
           <section className="professor-panel">
             <div className="section-heading">
               <div>
@@ -995,6 +1116,23 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
       </main>
     </div>
   );
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function CameraIcon() {
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>;
+}
+
+function ShieldIcon() {
+  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>;
 }
 
 export default InstitutionPage;
