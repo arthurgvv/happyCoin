@@ -27,6 +27,9 @@ public class Company {
     @Column(name = "senha")
     private String senha;
 
+    @Column(name = "photo_url", columnDefinition = "TEXT")
+    private String photoUrl;
+
     public Company() {
     }
 
@@ -69,4 +72,7 @@ public class Company {
     public void setSenha(String senha) {
         this.senha = senha;
     }
+
+    public String getPhotoUrl() { return photoUrl; }
+    public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
 }

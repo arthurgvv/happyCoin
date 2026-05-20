@@ -39,6 +39,9 @@ public class Institution {
     @Column(name = "identificador_institucional", unique = true)
     private String identificadorInstitucional;
 
+    @Column(name = "photo_url", columnDefinition = "TEXT")
+    private String photoUrl;
+
     @Column(name = "criado_em")
     private LocalDateTime criadoEm;
 
@@ -144,4 +147,7 @@ public class Institution {
     public void addProfessor(UUID professorId) {
         this.professores.add(professorId);
     }
+
+    public String getPhotoUrl() { return photoUrl; }
+    public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
 }

@@ -41,4 +41,7 @@ public class UpdateStudentRequest {
     public String getSenha() {
         return senha;
     }
+
+    private String photoUrl;
+    public String getPhotoUrl() { return photoUrl; }
 }

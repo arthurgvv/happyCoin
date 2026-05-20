@@ -71,6 +71,7 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
         onChangePage={setActivePage}
         onLogout={onLogout}
         role="STUDENT"
+        user={user}
         tabs={[
           { key: "products", label: "Produtos" },
           { key: "purchases", label: "Minhas Compras" },

@@ -1,5 +1,6 @@
 package br.com.emoney.service;
 
+import br.com.emoney.dto.CompanyResponse;
 import br.com.emoney.dto.InstitutionResponse;
 import br.com.emoney.dto.ProfessorResponse;
 import br.com.emoney.dto.RegisterInstitutionRequest;
@@ -9,6 +10,7 @@ import br.com.emoney.dto.StudentResponse;
 import br.com.emoney.dto.UpdateInstitutionRequest;
 import br.com.emoney.model.Institution;
 import br.com.emoney.model.Professor;
+import br.com.emoney.repository.CompanyRepository;
 import br.com.emoney.repository.InstitutionRepository;
 import br.com.emoney.repository.ProfessorRepository;
 import br.com.emoney.repository.StudentRepository;
@@ -27,13 +29,14 @@ public class InstitutionService {
     private final InstitutionRepository institutionRepository;
     private final ProfessorRepository professorRepository;
     private final ValidationService validationService;
-
     private final StudentRepository studentRepository;
+    private final CompanyRepository companyRepository;
 
-    public InstitutionService(InstitutionRepository institutionRepository, ProfessorRepository professorRepository, StudentRepository studentRepository, ValidationService validationService) {
+    public InstitutionService(InstitutionRepository institutionRepository, ProfessorRepository professorRepository, StudentRepository studentRepository, CompanyRepository companyRepository, ValidationService validationService) {
         this.institutionRepository = institutionRepository;
         this.professorRepository = professorRepository;
         this.studentRepository = studentRepository;
+        this.companyRepository = companyRepository;
         this.validationService = validationService;
     }
 
@@ -158,6 +161,9 @@ public class InstitutionService {
         if (request.getEndereco() != null && !request.getEndereco().isBlank()) {
             institution.setEndereco(validationService.text(request.getEndereco(), "Endereco"));
         }
+        if (request.getPhotoUrl() != null) {
+            institution.setPhotoUrl(request.getPhotoUrl());
+        }
 
         Institution saved = institutionRepository.save(institution);
         return new InstitutionResponse(saved, listProfessors(institutionId));
@@ -188,6 +194,12 @@ public class InstitutionService {
         return institutionRepository.findAll().stream()
                 .map(Institution::getNome)
                 .sorted()
+                .toList();
+    }
+
+    public List<CompanyResponse> listCompanies() {
+        return companyRepository.findAll().stream()
+                .map(CompanyResponse::new)
                 .toList();
     }
 }

@@ -65,12 +65,24 @@ const LOGOUT_ICON = (
   </svg>
 );
 
-function Navbar({ activePage, onChangePage, onLogout, role, tabs }) {
+const ROLE_LABELS = {
+  STUDENT: "Estudante",
+  PROFESSOR: "Professor",
+  COMPANY: "Empresa",
+  INSTITUTION: "Instituição",
+};
+
+function Navbar({ activePage, onChangePage, onLogout, role, tabs, user }) {
   const navTabs = tabs ?? (
     role === "STUDENT"
       ? [{ key: "products", label: "Produtos" }, { key: "account", label: "Minha Conta" }]
       : []
   );
+
+  const displayName = user?.nomeFantasia || user?.nome || "";
+  const initials = displayName
+    ? displayName.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase()
+    : "?";
 
   return (
     <nav className="navbar">
@@ -94,6 +106,20 @@ function Navbar({ activePage, onChangePage, onLogout, role, tabs }) {
           </button>
         ))}
       </div>
+
+      {user && (
+        <div className="nav-user">
+          <div className="nav-user-avatar">
+            {user.photoUrl
+              ? <img src={user.photoUrl} alt={displayName} />
+              : initials}
+          </div>
+          <div className="nav-user-info">
+            <p className="nav-user-name">{displayName}</p>
+            <p className="nav-user-role">{ROLE_LABELS[role] ?? role}</p>
+          </div>
+        </div>
+      )}
 
       <div className="nav-logout">
         <button type="button" onClick={onLogout}>

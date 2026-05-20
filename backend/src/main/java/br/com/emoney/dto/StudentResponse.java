@@ -18,6 +18,7 @@ public class StudentResponse {
     private int saldoMoedas;
     private String ultimoAviso;
     private LocalDateTime criadoEm;
+    private String photoUrl;
 
     public StudentResponse(Student student) {
         this.id = student.getId();
@@ -32,6 +33,7 @@ public class StudentResponse {
         this.saldoMoedas = student.getSaldoMoedas();
         this.ultimoAviso = student.getUltimoAviso();
         this.criadoEm = student.getCriadoEm();
+        this.photoUrl = student.getPhotoUrl();
     }
 
     public UUID getId() {
@@ -81,4 +83,6 @@ public class StudentResponse {
     public LocalDateTime getCriadoEm() {
         return criadoEm;
     }
+
+    public String getPhotoUrl() { return photoUrl; }
 }

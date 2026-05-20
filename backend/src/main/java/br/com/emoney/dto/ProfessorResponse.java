@@ -15,6 +15,7 @@ public class ProfessorResponse {
     private List<String> cursos;
     private int saldoMoedas;
     private String ultimoAviso;
+    private String photoUrl;
 
     public ProfessorResponse(Professor professor) {
         this.id = professor.getId();
@@ -25,6 +26,7 @@ public class ProfessorResponse {
         this.cursos = professor.getCursos();
         this.saldoMoedas = professor.getSaldoMoedas();
         this.ultimoAviso = professor.getUltimoAviso();
+        this.photoUrl = professor.getPhotoUrl();
     }
 
     public UUID getId() {
@@ -66,4 +68,6 @@ public class ProfessorResponse {
     public String getUltimoAviso() {
         return ultimoAviso;
     }
+
+    public String getPhotoUrl() { return photoUrl; }
 }

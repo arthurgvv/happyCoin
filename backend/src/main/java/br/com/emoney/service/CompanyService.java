@@ -83,6 +83,9 @@ public class CompanyService {
         if (request.getSenha() != null && !request.getSenha().isBlank()) {
             company.setSenha(validationService.senha(request.getSenha()));
         }
+        if (request.getPhotoUrl() != null) {
+            company.setPhotoUrl(request.getPhotoUrl());
+        }
 
         return new CompanyResponse(companyRepository.save(company));
     }

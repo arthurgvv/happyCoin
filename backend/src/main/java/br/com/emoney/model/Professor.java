@@ -47,6 +47,9 @@ public class Professor {
     @Column(name = "ultimo_aviso")
     private String ultimoAviso;
 
+    @Column(name = "photo_url", columnDefinition = "TEXT")
+    private String photoUrl;
+
     public Professor() {
         this.cursos = new ArrayList<>();
     }
@@ -138,4 +141,7 @@ public class Professor {
     public void setUltimoAviso(String ultimoAviso) {
         this.ultimoAviso = ultimoAviso;
     }
+
+    public String getPhotoUrl() { return photoUrl; }
+    public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
 }

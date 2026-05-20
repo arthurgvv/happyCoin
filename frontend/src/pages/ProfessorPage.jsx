@@ -9,7 +9,7 @@ const COURSES = [
   "Medicina", "Psicologia", "Publicidade e Propaganda", "Sistemas de Informacao",
 ];
 
-const emptyProfile = { nome: "", email: "", senha: "", cursos: [] };
+const emptyProfile = { nome: "", email: "", senha: "", cursos: [], photoUrl: null };
 
 function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
   const [activePage, setActivePage] = useState("courses");
@@ -136,6 +136,7 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
         onChangePage={setActivePage}
         onLogout={onLogout}
         role="PROFESSOR"
+        user={user}
         tabs={[
           { key: "courses", label: "Cursos" },
           { key: "transfers", label: "Extrato" },
@@ -224,15 +225,39 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
               </div>
             </div>
 
-            <div style={{ marginBottom: "24px", padding: "16px", background: "var(--surface-2, #f9f9f9)", borderRadius: "8px" }}>
-              <p><strong>Nome:</strong> {user.nome}</p>
-              <p><strong>Email:</strong> {user.email}</p>
-              <p><strong>Instituição:</strong> {user.institutionName || "—"}</p>
-              <p><strong>Cursos:</strong> {(user.cursos || []).join(", ") || "—"}</p>
-              <p><strong>Saldo:</strong> {user.saldoMoedas} moedas</p>
+            <div className="info-card">
+              <p><strong>Nome</strong>{user.nome}</p>
+              <p><strong>Email</strong>{user.email}</p>
+              <p><strong>Instituição</strong>{user.institutionName || "—"}</p>
+              <p><strong>Cursos</strong>{(user.cursos || []).join(", ") || "—"}</p>
+              <p><strong>Saldo</strong>{user.saldoMoedas} moedas</p>
             </div>
 
             <form className="entity-form professor-form" onSubmit={handleSaveProfile}>
+              <div className="full-field">
+                <div className="photo-upload-wrap">
+                  <div className="photo-upload-preview">
+                    {profileForm.photoUrl
+                      ? <img src={profileForm.photoUrl} alt="Foto" />
+                      : (user.photoUrl
+                          ? <img src={user.photoUrl} alt="Foto" />
+                          : user.nome.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase())}
+                  </div>
+                  <div>
+                    <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: "0.88rem" }}>Foto de perfil</p>
+                    <label className="photo-upload-btn" style={{ display: "inline-block" }}>
+                      {(profileForm.photoUrl || user.photoUrl) ? "Trocar foto" : "Adicionar foto"}
+                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = () => setProfileForm(p => ({ ...p, photoUrl: reader.result }));
+                        reader.readAsDataURL(file);
+                      }} />
+                    </label>
+                  </div>
+                </div>
+              </div>
               <label>
                 Novo nome (opcional)
                 <input value={profileForm.nome} onChange={(e) => setProfileForm((p) => ({ ...p, nome: e.target.value }))} />

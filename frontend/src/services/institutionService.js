@@ -28,4 +28,8 @@ export const institutionService = {
   startSemester() {
     return apiRequest("/institutions/me/semester/start", { method: "POST" });
   },
+
+  companies() {
+    return apiRequest("/institutions/me/companies");
+  },
 };

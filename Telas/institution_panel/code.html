@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HappyCoin | Institutional Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;800;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Hanken Grotesk', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid #eadfca;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "surface-tint": "#795900",
+                        "surface": "#fff8f2",
+                        "surface-variant": "#ece1d1",
+                        "surface-container-low": "#fef2e2",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#ffdf9f",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#f8ecdc",
+                        "surface-container-highest": "#ece1d1",
+                        "primary-fixed-dim": "#f9bd24",
+                        "secondary-fixed-dim": "#e3c281",
+                        "primary": "#795900",
+                        "on-secondary-fixed-variant": "#59430e",
+                        "inverse-primary": "#f9bd24",
+                        "background": "#fff8f2",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#e3d9c9",
+                        "tertiary-container": "#4cd0ff",
+                        "inverse-surface": "#353025",
+                        "error-container": "#ffdad6",
+                        "on-background": "#201b11",
+                        "surface-bright": "#fff8f2",
+                        "secondary": "#735b24",
+                        "outline-variant": "#d3c5ad",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#261a00",
+                        "primary-fixed": "#ffdf9f",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#001f29",
+                        "tertiary-fixed-dim": "#62d4ff",
+                        "on-primary-fixed-variant": "#5c4300",
+                        "secondary-container": "#fedb98",
+                        "on-tertiary-fixed-variant": "#004d63",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#fbefdf",
+                        "on-secondary-fixed": "#261a00",
+                        "outline": "#817661",
+                        "tertiary-fixed": "#bce9ff",
+                        "on-surface": "#201b11",
+                        "on-primary-container": "#674b00",
+                        "surface-container-high": "#f2e7d7",
+                        "tertiary": "#006783",
+                        "on-surface-variant": "#4f4633",
+                        "on-tertiary-container": "#00576f",
+                        "primary-container": "#f4b91f",
+                        "on-secondary-container": "#785f28"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xxl": "64px",
+                        "unit": "4px",
+                        "xl": "40px",
+                        "container-max": "1200px",
+                        "margin-mobile": "16px",
+                        "sm": "8px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-sm": ["JetBrains Mono"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-md": ["JetBrains Mono"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-sm": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "label-sm": ["12px", {"lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Sidebar Navigation -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-outline-variant bg-surface flex flex-col py-lg px-md z-50">
+<div class="mb-xxl px-sm">
+<h1 class="font-headline-lg text-headline-lg font-black text-primary">HappyCoin</h1>
+<p class="font-body-sm text-on-surface-variant leading-tight">Institutional Portal</p>
+</div>
+<nav class="flex-1 space-y-xs">
+<a class="flex items-center gap-md px-md py-sm rounded-lg transition-all duration-200 text-primary font-bold border-r-4 border-primary bg-surface-container-high" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg hover:bg-surface-container-high transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-body-md">Wallet</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg hover:bg-surface-container-high transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-body-md">Marketplace</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg hover:bg-surface-container-high transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="handshake">handshake</span>
+<span class="font-body-md">Partnerships</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg hover:bg-surface-container-high transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-lg border-t border-outline-variant/30 px-sm">
+<div class="flex items-center gap-md mb-md">
+<img alt="User Profile Avatar" class="w-10 h-10 rounded-full bg-surface-container-highest object-cover border border-outline-variant" data-alt="A professional headshot of a senior administrator in a minimalist office setting with soft sunlight streaming through window blinds, creating a warm and clean corporate atmosphere. The focus is sharp on the subject's friendly expression, maintaining a high-key, modern light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYpR3Bnyh8881WC5zJ-NAEfsVs63qvqfE-5LaYDf5hpHHJGwoe3eAfbGkMhLTT5gyZCYMxb_9Op6WEJrge8GUztynPbIBjAA2OdDQG0fBm4nZLQy5o0AP64YAZzrdKTJEArsJKs5R56Sw4NS1iDRr86Jc-UayCQ4yXifcxBuvZqrp9YA0VPVu4WSB7hTMs1AHx12weGpFXWSikeHCFdGIXPy-RXhkmUbCGmlRWuL9dsoexQvNL1oACaYZ3tEz0sBNKuUrR7fKTQGWq"/>
+<div>
+<p class="font-body-md font-bold leading-none">Admin User</p>
+<p class="font-body-sm text-on-surface-variant">Univ. Registrar</p>
+</div>
+</div>
+<button class="w-full py-sm px-md rounded-full bg-surface-container-highest text-on-surface font-bold font-body-sm hover:bg-surface-variant transition-colors">
+                Switch Role
+            </button>
+</div>
+</aside>
+<!-- Top AppBar -->
+<header class="ml-64 sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 px-lg py-md flex justify-between items-center shadow-sm">
+<div class="flex items-center gap-xxl">
+<nav class="flex items-center gap-lg">
+<a class="font-label-md text-label-md text-primary font-extrabold border-b-2 border-primary pb-xs transition-transform active:scale-95" href="#">Overview</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-opacity pb-xs" href="#">Transactions</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-opacity pb-xs" href="#">Directory</a>
+</nav>
+</div>
+<div class="flex items-center gap-lg">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors" data-icon="search">search</span>
+<input class="pl-xxl pr-md py-sm bg-surface-container-lowest border border-outline-variant rounded-full text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-64" placeholder="Search directory..." type="text"/>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-sm rounded-full hover:bg-surface-container-high transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<button class="p-sm rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="help">help</span>
+</button>
+</div>
+<button class="bg-primary-container text-on-primary-container px-lg py-sm rounded-full font-bold font-body-sm hover:brightness-95 transition-all shadow-sm active:scale-95">
+                Mint Coin
+            </button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 p-xxl max-w-[1400px] mx-auto min-h-screen">
+<!-- Welcome Header -->
+<section class="mb-xxl">
+<p class="font-label-sm text-primary mb-xs tracking-widest uppercase">System Dashboard</p>
+<h2 class="font-display-lg text-display-lg text-on-surface tracking-tighter">Earned Joy Overview.</h2>
+</section>
+<!-- High-Level Stats Bento Grid -->
+<section class="bento-grid mb-xxl">
+<!-- Total HC Card -->
+<div class="col-span-12 md:col-span-6 lg:col-span-4 p-xl rounded-[24px] bg-primary text-on-primary shadow-xl flex flex-col justify-between h-[240px] relative overflow-hidden group">
+<div class="z-10">
+<p class="font-label-md opacity-80 mb-sm">Total HC in Circulation</p>
+<p class="font-display-lg text-[42px] font-black leading-none flex items-baseline gap-xs">
+<span class="material-symbols-outlined text-[32px]" data-icon="monetization_on" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+                        1,482,900
+                    </p>
+</div>
+<div class="z-10 flex items-center gap-md">
+<div class="h-1 bg-white/20 flex-1 rounded-full overflow-hidden">
+<div class="h-full bg-primary-fixed w-[72%]"></div>
+</div>
+<span class="font-label-sm">+12.4% vs last month</span>
+</div>
+<!-- Abstract visual element -->
+<div class="absolute -right-12 -bottom-12 w-48 h-48 bg-primary-fixed/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+</div>
+<!-- Active Professors -->
+<div class="col-span-12 md:col-span-3 lg:col-span-4 p-xl rounded-[24px] bg-surface-container-high border border-outline-variant shadow-sm flex flex-col justify-between h-[240px]">
+<div>
+<p class="font-label-md text-on-surface-variant mb-sm">Active Professors</p>
+<p class="font-headline-lg text-on-surface text-[48px]">248</p>
+</div>
+<div class="flex -space-x-3 overflow-hidden">
+<img alt="Avatar" class="inline-block h-10 w-10 rounded-full ring-2 ring-white" data-alt="Close-up portrait of an academic professor in a sunlit university library, surrounded by classical leather-bound books. The lighting is soft and natural, emphasizing a professional yet warm environment. The color palette consists of soft beiges and deep wood tones, aligned with the modern light-mode corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLjpDoEo330JNnlpbdtwqSh7EtVEDLyQFIDGbYw3NJ7loxNQqiC5AwocG9spCVz2afHznhs1_1BZEDpbUtAC4705svrCjn6T7R9JP-po3-RWpvjA1Ju8vk8NtWHfVV3G6I8CCSRDFcJRdCxUM3FGkIycibxHw6QSf9GlyBw9U-ouSKUG9ZtIeOnDyW8nAm5DSm30T3MLjHhPikz_mEdTF8h4CENyigWixGvshu9wW6Dh1kDO4MNkI6wZWJJmkYlM_jQSZH4aLf40oW"/>
+<img alt="Avatar" class="inline-block h-10 w-10 rounded-full ring-2 ring-white" data-alt="Portrait of a modern researcher in a bright, contemporary university laboratory setting with white workstations and clear glass equipment. The image has high-key lighting and a crisp, clean aesthetic. The style is professional and sophisticated, emphasizing innovation and academic prestige in a light-mode environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKRqL1FV8XFPRt-G4Y25CyflBETT-7edHn8AqcIgcylV0ndB_rm6HVywkd6WeKK10dZNwJaXIBwM01Iq5WGlnyjmF9dJxrKTTR2opi4sGGPed7yHV9fWrPWyOTUH4cnYSPOn_UXsMzOqGJQI2gXfPVBlojfg4UXi7zQGOAxMMTzPHAmJjBLzlC3Ldt8RiEZ1eH5wwTS6tfTtYOgw0v1LAh9GrUndUOz487dEup7yqG45Iw-7nqzvr0U3bH5tIBe4SYHkuD9CxoPvb0"/>
+<img alt="Avatar" class="inline-block h-10 w-10 rounded-full ring-2 ring-white" data-alt="A friendly educator smiling in a bright campus courtyard with blurred greenery and architectural limestone buildings in the background. The lighting is warm and golden, creating a sense of approachability and joy. The image maintains a professional fintech-inspired clarity and modern composition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB16ANdIc8GTiGrO-3c2gLjsH5zwnQ6IkNldRKscRNWS1Qr57FrZvR7pNxh1W3fDza70v4GfstC9qGPbGQgqN1Rfx91RWfKDbtpvnEkPVEinH_GWbekcz4RJAG2qGwzUSOiTZyVHMgTQNb7HTrWuGvSQ1GR81wljfaSfEmA_cRmDI4dcK671zpDa8JSFb7Q-hojjtA27K39jL9vHA1-R2kUv_YnLgIjEOE5JeCXkoMl68J6rJKx1Zc_EPCX452xJXwYzI5zAyaCN3Rh"/>
+<div class="flex items-center justify-center h-10 w-10 rounded-full ring-2 ring-white bg-secondary-container text-on-secondary-container text-label-sm font-bold">+45</div>
+</div>
+</div>
+<!-- Registered Companies -->
+<div class="col-span-12 md:col-span-3 lg:col-span-4 p-xl rounded-[24px] bg-tertiary text-on-tertiary border border-tertiary shadow-lg flex flex-col justify-between h-[240px] relative overflow-hidden group">
+<div class="z-10">
+<p class="font-label-md opacity-80 mb-sm">Partner Network</p>
+<p class="font-headline-lg text-on-tertiary text-[48px]">84</p>
+<p class="font-body-sm opacity-90 mt-xs">Active retail &amp; corporate partners</p>
+</div>
+<button class="z-10 w-fit bg-tertiary-container text-on-tertiary-container px-lg py-sm rounded-full font-bold font-body-sm hover:brightness-105 transition-all">
+                    View Network
+                </button>
+<div class="absolute right-[-10%] top-[-10%] w-32 h-32 bg-white/5 rotate-12 group-hover:rotate-45 transition-transform duration-1000"></div>
+</div>
+</section>
+<!-- Directory Section -->
+<section class="bg-surface-container-low rounded-[32px] p-xl border border-outline-variant/30">
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-xl gap-md">
+<div>
+<h3 class="font-headline-md text-on-surface">Institutional Directory</h3>
+<p class="font-body-sm text-on-surface-variant">Manage roles, permissions, and status across the ecosystem.</p>
+</div>
+<!-- Filter Tabs -->
+<div class="flex bg-surface-container p-xs rounded-full border border-outline-variant/50">
+<button class="px-lg py-sm rounded-full bg-surface-container-lowest text-primary font-bold shadow-sm font-label-md">Professors</button>
+<button class="px-lg py-sm rounded-full text-on-surface-variant hover:text-on-surface font-label-md transition-colors">Students</button>
+<button class="px-lg py-sm rounded-full text-on-surface-variant hover:text-on-surface font-label-md transition-colors">Companies</button>
+</div>
+</div>
+<!-- Directory Table -->
+<div class="bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<table class="w-full border-collapse text-left">
+<thead class="bg-surface-container-highest/30 border-b border-outline-variant">
+<tr>
+<th class="px-lg py-md font-label-md text-on-surface-variant uppercase tracking-wider">Entity</th>
+<th class="px-lg py-md font-label-md text-on-surface-variant uppercase tracking-wider">Department</th>
+<th class="px-lg py-md font-label-md text-on-surface-variant uppercase tracking-wider">Balance</th>
+<th class="px-lg py-md font-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-lg py-md font-label-md text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-lg">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-primary">EK</div>
+<div>
+<p class="font-body-md font-bold">Dr. Elena Kostic</p>
+<p class="font-body-sm text-on-surface-variant">elena.k@university.edu</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg">
+<span class="px-md py-xs rounded-full bg-surface-container text-on-surface-variant text-label-sm">Applied Sciences</span>
+</td>
+<td class="px-lg py-lg">
+<div class="flex items-center gap-xs font-label-md text-on-surface">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="monetization_on" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+                                    12,450
+                                </div>
+</td>
+<td class="px-lg py-lg">
+<div class="flex items-center gap-xs text-primary font-bold text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                    Verified
+                                </div>
+</td>
+<td class="px-lg py-lg text-right">
+<div class="flex items-center justify-end gap-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-sm rounded-full hover:bg-surface-container-high transition-colors" title="Reset Password"><span class="material-symbols-outlined text-on-surface-variant" data-icon="lock_reset">lock_reset</span></button>
+<button class="p-sm rounded-full hover:bg-error/10 hover:text-error transition-colors" title="Deactivate"><span class="material-symbols-outlined text-on-surface-variant" data-icon="block">block</span></button>
+<button class="p-sm rounded-full hover:bg-surface-container-high transition-colors" title="More Actions"><span class="material-symbols-outlined text-on-surface-variant" data-icon="more_vert">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-lg">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-primary">JW</div>
+<div>
+<p class="font-body-md font-bold">Prof. Julian Weaver</p>
+<p class="font-body-sm text-on-surface-variant">weaver.j@university.edu</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg">
+<span class="px-md py-xs rounded-full bg-surface-container text-on-surface-variant text-label-sm">Humanities</span>
+</td>
+<td class="px-lg py-lg">
+<div class="flex items-center gap-xs font-label-md text-on-surface">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="monetization_on" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+                                    4,200
+                                </div>
+</td>
+<td class="px-lg py-lg">
+<div class="flex items-center gap-xs text-secondary font-bold text-label-sm">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                                    Pending
+                                </div>
+</td>
+<td class="px-lg py-lg text-right">
+<div class="flex items-center justify-end gap-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="bg-primary text-on-primary px-md py-xs rounded-full text-label-sm font-bold shadow-sm">Verify Now</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-lg py-lg">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-primary">MS</div>
+<div>
+<p class="font-body-md font-bold">Dr. Marcus Smith</p>
+<p class="font-body-sm text-on-surface-variant">m.smith@university.edu</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg">
+<span class="px-md py-xs rounded-full bg-surface-container text-on-surface-variant text-label-sm">Economics</span>
+</td>
+<td class="px-lg py-lg">
+<div class="flex items-center gap-xs font-label-md text-on-surface">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="monetization_on" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+                                    8,900
+                                </div>
+</td>
+<td class="px-lg py-lg">
+<div class="flex items-center gap-xs text-primary font-bold text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                                    Verified
+                                </div>
+</td>
+<td class="px-lg py-lg text-right">
+<div class="flex items-center justify-end gap-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-sm rounded-full hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-on-surface-variant" data-icon="lock_reset">lock_reset</span></button>
+<button class="p-sm rounded-full hover:bg-error/10 hover:text-error transition-colors"><span class="material-symbols-outlined text-on-surface-variant" data-icon="block">block</span></button>
+<button class="p-sm rounded-full hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-on-surface-variant" data-icon="more_vert">more_vert</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-lg bg-surface-container-lowest flex items-center justify-between">
+<p class="font-body-sm text-on-surface-variant">Showing 1-3 of 248 professors</p>
+<div class="flex gap-sm">
+<button class="p-sm rounded-lg border border-outline-variant hover:bg-surface-container transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="p-sm rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Insights Section -->
+<section class="mt-xxl grid grid-cols-1 md:grid-cols-2 gap-xxl">
+<div class="glass-card p-xl rounded-[24px]">
+<h4 class="font-headline-md mb-lg">Minting Velocity</h4>
+<div class="space-y-md">
+<div class="flex justify-between items-end mb-xs">
+<span class="font-label-md text-on-surface-variant">This Week</span>
+<span class="font-body-md font-bold">12,500 HC</span>
+</div>
+<div class="h-4 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary transition-all duration-1000 w-[65%]"></div>
+</div>
+<div class="flex justify-between items-end pt-md border-t border-outline-variant/30">
+<div>
+<p class="font-label-sm text-on-surface-variant">Top Minting Reason</p>
+<p class="font-body-sm font-bold">Academic Achievement</p>
+</div>
+<div class="text-right">
+<p class="font-label-sm text-on-surface-variant">Efficiency</p>
+<p class="font-body-sm font-bold text-tertiary">High (98%)</p>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-secondary-container/20 p-xl rounded-[24px] border border-secondary-container/50">
+<h4 class="font-headline-md mb-lg text-on-secondary-container">System Status</h4>
+<div class="grid grid-cols-2 gap-lg">
+<div class="bg-white p-md rounded-xl shadow-sm border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary mb-sm" data-icon="sensors">sensors</span>
+<p class="font-label-sm text-on-surface-variant">API Latency</p>
+<p class="font-body-md font-black">24ms</p>
+</div>
+<div class="bg-white p-md rounded-xl shadow-sm border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary mb-sm" data-icon="security">security</span>
+<p class="font-label-sm text-on-surface-variant">Audit Logs</p>
+<p class="font-body-md font-black text-primary">Clean</p>
+</div>
+<div class="bg-white p-md rounded-xl shadow-sm border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary mb-sm" data-icon="lan">lan</span>
+<p class="font-label-sm text-on-surface-variant">Node Sync</p>
+<p class="font-body-md font-black">100%</p>
+</div>
+<div class="bg-white p-md rounded-xl shadow-sm border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary mb-sm" data-icon="account_tree">account_tree</span>
+<p class="font-label-sm text-on-surface-variant">Smart Contracts</p>
+<p class="font-body-md font-black">v2.4.1</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<script>
+        // Micro-interactions and UI state
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animate progress bars on load
+            const progressBars = document.querySelectorAll('.h-full.bg-primary');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 300);
+            });
+
+            // Table row hover scale effect
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                row.addEventListener('mouseenter', () => {
+                    row.style.transform = 'translateX(4px)';
+                    row.style.transition = 'transform 0.2s ease-out';
+                });
+                row.addEventListener('mouseleave', () => {
+                    row.style.transform = 'translateX(0)';
+                });
+            });
+
+            // Active tab toggling logic
+            const tabButtons = document.querySelectorAll('.flex.bg-surface-container button');
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabButtons.forEach(b => {
+                        b.classList.remove('bg-surface-container-lowest', 'text-primary', 'font-bold', 'shadow-sm');
+                        b.classList.add('text-on-surface-variant');
+                    });
+                    btn.classList.remove('text-on-surface-variant');
+                    btn.classList.add('bg-surface-container-lowest', 'text-primary', 'font-bold', 'shadow-sm');
+                });
+            });
+        });
+    </script>
+</body></html>

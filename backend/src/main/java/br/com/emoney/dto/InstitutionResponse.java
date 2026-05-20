@@ -15,6 +15,7 @@ public class InstitutionResponse {
     private String identificadorInstitucional;
     private LocalDateTime criadoEm;
     private List<ProfessorResponse> professores;
+    private String photoUrl;
 
     public InstitutionResponse(Institution institution, List<ProfessorResponse> professores) {
         this.id = institution.getId();
@@ -25,6 +26,7 @@ public class InstitutionResponse {
         this.identificadorInstitucional = institution.getIdentificadorInstitucional();
         this.criadoEm = institution.getCriadoEm();
         this.professores = professores;
+        this.photoUrl = institution.getPhotoUrl();
     }
 
     public UUID getId() {
@@ -58,4 +60,6 @@ public class InstitutionResponse {
     public List<ProfessorResponse> getProfessores() {
         return professores;
     }
+
+    public String getPhotoUrl() { return photoUrl; }
 }

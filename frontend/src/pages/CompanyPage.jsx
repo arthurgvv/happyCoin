@@ -6,7 +6,7 @@ import { companyService } from "../services/companyService.js";
 import { productService } from "../services/productService.js";
 
 const emptyProduct = { nome: "", descricao: "", fotoUrl: "", fotoNome: "", custoMoedas: "" };
-const emptyProfile = { nomeFantasia: "", email: "", senha: "" };
+const emptyProfile = { nomeFantasia: "", email: "", senha: "", photoUrl: null };
 
 function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
   const { products, refresh } = useProducts();
@@ -150,6 +150,7 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
         onChangePage={setActivePage}
         onLogout={onLogout}
         role="COMPANY"
+        user={user}
         tabs={[
           { key: "products", label: "Produtos" },
           { key: "purchases", label: "Resgates" },
@@ -159,8 +160,10 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
 
       <main className="student-home">
         <section className="company-hero">
-          <p className="eyebrow">Empresa parceira</p>
-          <h1>{user.nomeFantasia}</h1>
+          <div>
+            <p className="eyebrow">Empresa parceira</p>
+            <h1>{user.nomeFantasia}</h1>
+          </div>
           <span>CNPJ {user.cnpj}</span>
         </section>
 
@@ -262,13 +265,37 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
               </div>
             </div>
 
-            <div style={{ marginBottom: "24px", padding: "16px", background: "var(--surface-2, #f9f9f9)", borderRadius: "8px" }}>
-              <p><strong>Nome atual:</strong> {user.nomeFantasia}</p>
-              <p><strong>Email:</strong> {user.email}</p>
-              <p><strong>CNPJ:</strong> {user.cnpj}</p>
+            <div className="info-card">
+              <p><strong>Nome</strong>{user.nomeFantasia}</p>
+              <p><strong>Email</strong>{user.email}</p>
+              <p><strong>CNPJ</strong>{user.cnpj}</p>
             </div>
 
             <form className="entity-form professor-form" onSubmit={handleSaveProfile}>
+              <div className="full-field">
+                <div className="photo-upload-wrap">
+                  <div className="photo-upload-preview photo-upload-preview-blue">
+                    {profileForm.photoUrl
+                      ? <img src={profileForm.photoUrl} alt="Logo" />
+                      : (user.photoUrl
+                          ? <img src={user.photoUrl} alt="Logo" />
+                          : user.nomeFantasia.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase())}
+                  </div>
+                  <div>
+                    <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: "0.88rem" }}>Logo da empresa</p>
+                    <label className="photo-upload-btn" style={{ display: "inline-block" }}>
+                      {(profileForm.photoUrl || user.photoUrl) ? "Trocar logo" : "Adicionar logo"}
+                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = () => setProfileForm(p => ({ ...p, photoUrl: reader.result }));
+                        reader.readAsDataURL(file);
+                      }} />
+                    </label>
+                  </div>
+                </div>
+              </div>
               <label>
                 Novo nome fantasia (opcional)
                 <input value={profileForm.nomeFantasia} onChange={(e) => setProfileForm((p) => ({ ...p, nomeFantasia: e.target.value }))} />

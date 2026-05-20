@@ -12,6 +12,7 @@ const emptyForm = {
   instituicao: "",
   curso: "",
   senha: "",
+  photoUrl: "",
 };
 
 function AccountForm({ user, onSave, onToast }) {
@@ -69,6 +70,27 @@ function AccountForm({ user, onSave, onToast }) {
       </div>
 
       <form className="entity-form" onSubmit={handleSubmit}>
+        <div className="full-field">
+          <div className="photo-upload-wrap">
+            <div className="photo-upload-preview photo-upload-preview-teal">
+              {form.photoUrl
+                ? <img src={form.photoUrl} alt="Foto de perfil" />
+                : (form.nome ? form.nome.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase() : "?")}
+            </div>
+            <div>
+              <p style={{ margin: "0 0 6px", fontWeight: 700, fontSize: "0.88rem" }}>Foto de perfil</p>
+              <label className="photo-upload-btn" style={{ display: "inline-block" }}>
+                {form.photoUrl ? "Trocar foto" : "Adicionar foto"}
+                <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const url = await readFileAsDataUrl(file);
+                  update("photoUrl", url);
+                }} />
+              </label>
+            </div>
+          </div>
+        </div>
         <label>
           Nome completo
           <input value={form.nome} onChange={(event) => update("nome", event.target.value)} required />
@@ -166,6 +188,15 @@ function AccountForm({ user, onSave, onToast }) {
 
 function onlyDigits(value) {
   return value.replace(/\D/g, "");
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 export default AccountForm;

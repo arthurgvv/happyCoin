@@ -96,6 +96,9 @@ public class ProfessorService {
         if (request.getCursos() != null && !request.getCursos().isEmpty()) {
             professor.setCursos(validationService.cursos(request.getCursos()));
         }
+        if (request.getPhotoUrl() != null) {
+            professor.setPhotoUrl(request.getPhotoUrl());
+        }
 
         return new ProfessorResponse(professorRepository.save(professor));
     }

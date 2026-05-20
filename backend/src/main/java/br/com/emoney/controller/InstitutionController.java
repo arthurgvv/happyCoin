@@ -1,5 +1,6 @@
 package br.com.emoney.controller;
 
+import br.com.emoney.dto.CompanyResponse;
 import br.com.emoney.dto.InstitutionResponse;
 import br.com.emoney.dto.ProfessorResponse;
 import br.com.emoney.dto.RegisterProfessorRequest;
@@ -73,6 +74,12 @@ public class InstitutionController {
     public List<StudentResponse> students(@RequestHeader("Authorization") String authorization) {
         AuthSession session = requireInstitutionSession(authorization);
         return institutionService.listStudents(session.getUserId());
+    }
+
+    @GetMapping("/me/companies")
+    public List<CompanyResponse> companies(@RequestHeader("Authorization") String authorization) {
+        requireInstitutionSession(authorization);
+        return institutionService.listCompanies();
     }
 
     @PostMapping("/me/semester/start")

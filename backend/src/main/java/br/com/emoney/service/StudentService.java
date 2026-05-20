@@ -94,6 +94,9 @@ public class StudentService {
         if (request.getSenha() != null && !request.getSenha().isBlank()) {
             student.setSenha(validationService.senha(request.getSenha()));
         }
+        if (request.getPhotoUrl() != null) {
+            student.setPhotoUrl(request.getPhotoUrl());
+        }
 
         return new StudentResponse(studentRepository.save(student));
     }

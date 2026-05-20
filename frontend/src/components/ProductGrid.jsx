@@ -16,33 +16,37 @@ function ProductGrid({ products, walletBalance = 0, purchasingId, onDelete, onEd
           return (
             <article className="product-card" key={product.id}>
               {product.imageUrl && <img src={product.imageUrl} alt={product.nome} />}
-              <div>
+              <div className="product-body">
                 <span>{product.empresaParceira}</span>
                 <h3>{product.nome}</h3>
                 <p>{product.descricao}</p>
               </div>
               <div className="product-footer">
-                <strong>{product.custoMoedas} moedas</strong>
+                <strong className="product-price">{product.custoMoedas} moedas</strong>
                 {onPurchase && (
                   <button
-                    className="button button-primary"
+                    className="button-buy"
                     type="button"
                     disabled={!canPurchase || isPurchasing}
-                    title={canPurchase ? `Comprar ${product.nome}` : "Saldo insuficiente"}
+                    title={canPurchase ? `Resgatar ${product.nome}` : "Saldo insuficiente"}
                     onClick={() => onPurchase(product)}
                   >
-                    {isPurchasing ? "Comprando..." : "Comprar"}
+                    {isPurchasing ? "Resgatando..." : "Resgatar"}
                   </button>
                 )}
-                {onEdit && (
-                  <button className="button button-secondary" type="button" onClick={() => onEdit(product)}>
-                    Editar
-                  </button>
-                )}
-                {onDelete && (
-                  <button className="button button-danger" type="button" onClick={() => onDelete(product)}>
-                    Remover
-                  </button>
+                {(onEdit || onDelete) && (
+                  <div className="row-actions">
+                    {onEdit && (
+                      <button className="button button-secondary" type="button" onClick={() => onEdit(product)}>
+                        Editar
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button className="button button-danger" type="button" onClick={() => onDelete(product)}>
+                        Remover
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </article>
