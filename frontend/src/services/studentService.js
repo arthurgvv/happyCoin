@@ -1,6 +1,10 @@
 import { apiRequest } from "./apiClient.js";
 
 export const studentService = {
+  me() {
+    return apiRequest("/students/me");
+  },
+
   list() {
     return apiRequest("/students");
   },

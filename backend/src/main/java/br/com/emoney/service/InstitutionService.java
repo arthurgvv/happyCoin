@@ -8,6 +8,7 @@ import br.com.emoney.dto.RegisterProfessorRequest;
 import br.com.emoney.dto.SemesterStartResponse;
 import br.com.emoney.dto.StudentResponse;
 import br.com.emoney.dto.UpdateInstitutionRequest;
+import br.com.emoney.dto.UpdateProfessorRequest;
 import br.com.emoney.model.Institution;
 import br.com.emoney.model.Professor;
 import br.com.emoney.repository.CompanyRepository;
@@ -167,6 +168,40 @@ public class InstitutionService {
 
         Institution saved = institutionRepository.save(institution);
         return new InstitutionResponse(saved, listProfessors(institutionId));
+    }
+
+    public ProfessorResponse updateProfessor(UUID institutionId, UUID professorId, UpdateProfessorRequest request) {
+        findEntityById(institutionId);
+        Professor professor = professorRepository.findById(professorId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Professor nao encontrado."));
+
+        if (!institutionId.equals(professor.getInstitutionId())) {
+            throw new ResponseStatusException(FORBIDDEN, "Professor nao pertence a esta instituicao.");
+        }
+
+        if (request.getNome() != null && !request.getNome().isBlank()) {
+            professor.setNome(validationService.text(request.getNome(), "Nome"));
+        }
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            String email = request.getEmail().toLowerCase();
+            professorRepository.findByEmail(email).ifPresent(existing -> {
+                if (!existing.getId().equals(professorId)) {
+                    throw new ResponseStatusException(CONFLICT, "Ja existe professor com este email.");
+                }
+            });
+            professor.setEmail(email);
+        }
+        if (request.getSenha() != null && !request.getSenha().isBlank()) {
+            professor.setSenha(validationService.senha(request.getSenha()));
+        }
+        if (request.getCursos() != null && !request.getCursos().isEmpty()) {
+            professor.setCursos(validationService.cursos(request.getCursos()));
+        }
+        if (request.getPhotoUrl() != null) {
+            professor.setPhotoUrl(request.getPhotoUrl());
+        }
+
+        return new ProfessorResponse(professorRepository.save(professor));
     }
 
     public void deleteProfessor(UUID institutionId, UUID professorId) {

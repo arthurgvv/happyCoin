@@ -11,6 +11,7 @@ public class CoinTransferResponse {
     private UUID studentId;
     private String studentName;
     private String studentEmail;
+    private String studentCourse;
     private String professorName;
     private int quantidade;
     private String motivo;
@@ -31,6 +32,13 @@ public class CoinTransferResponse {
         return this;
     }
 
+    public CoinTransferResponse withStudentInfo(String name, String email, String course) {
+        this.studentName = name;
+        this.studentEmail = email;
+        this.studentCourse = course;
+        return this;
+    }
+
     public CoinTransferResponse withProfessorName(String name) {
         this.professorName = name;
         return this;
@@ -41,6 +49,7 @@ public class CoinTransferResponse {
     public UUID getStudentId() { return studentId; }
     public String getStudentName() { return studentName; }
     public String getStudentEmail() { return studentEmail; }
+    public String getStudentCourse() { return studentCourse; }
     public String getProfessorName() { return professorName; }
     public int getQuantidade() { return quantidade; }
     public String getMotivo() { return motivo; }

@@ -48,6 +48,15 @@ public class StudentController {
         return studentService.list();
     }
 
+    @GetMapping("/me")
+    public StudentResponse me(@RequestHeader("Authorization") String authorization) {
+        AuthSession session = authService.requireSession(authorization);
+        if (session.getRole() != UserRole.STUDENT) {
+            throw new ResponseStatusException(FORBIDDEN, "Apenas alunos podem acessar esta area.");
+        }
+        return studentService.findById(session.getUserId());
+    }
+
     @PutMapping("/me")
     public StudentResponse updateMe(@RequestHeader("Authorization") String authorization, @RequestBody UpdateStudentRequest request) {
         AuthSession session = authService.requireSession(authorization);

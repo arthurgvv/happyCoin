@@ -3,6 +3,7 @@ package br.com.emoney.service;
 import br.com.emoney.dto.RegisterInstitutionRequest;
 import br.com.emoney.dto.SemesterStartResponse;
 import br.com.emoney.model.Institution;
+import br.com.emoney.repository.CompanyRepository;
 import br.com.emoney.repository.InstitutionRepository;
 import br.com.emoney.repository.ProfessorRepository;
 import br.com.emoney.repository.StudentRepository;
@@ -31,10 +32,13 @@ class InstitutionServiceTest {
     @Mock
     private StudentRepository studentRepository;
 
+    @Mock
+    private CompanyRepository companyRepository;
+
     @Test
     void registersInstitutionWithoutCreatingProfessorsFromRequest() {
         ValidationService validationService = new ValidationService();
-        InstitutionService institutionService = new InstitutionService(institutionRepository, professorRepository, studentRepository, validationService);
+        InstitutionService institutionService = new InstitutionService(institutionRepository, professorRepository, studentRepository, companyRepository, validationService);
 
         when(institutionRepository.findByEmail(anyString())).thenReturn(Optional.empty());
         when(institutionRepository.existsByIdentificadorInstitucional(anyString())).thenReturn(false);

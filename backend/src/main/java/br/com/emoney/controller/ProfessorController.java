@@ -104,7 +104,7 @@ public class ProfessorController {
                 .map(t -> {
                     CoinTransferResponse r = new CoinTransferResponse(t);
                     studentRepository.findById(t.getStudentId()).ifPresent(s ->
-                            r.withStudentName(s.getNome(), s.getEmail()));
+                            r.withStudentInfo(s.getNome(), s.getEmail(), s.getCurso()));
                     return r;
                 })
                 .toList();

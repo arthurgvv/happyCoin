@@ -19,13 +19,19 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
   const [qrPurchase, setQrPurchase] = useState(null);
 
   useEffect(() => {
+    studentService.me()
+      .then(onUpdateUser)
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (user.ultimoAviso) {
       onToast({ message: user.ultimoAviso, type: "success" });
     }
   }, [user.ultimoAviso, onToast]);
 
   useEffect(() => {
-    if (activePage === "transfers") {
+    if (activePage === "historico") {
       setLoadingTransfers(true);
       studentService.transfers()
         .then(setTransfers)
@@ -35,7 +41,7 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
   }, [activePage]);
 
   useEffect(() => {
-    if (activePage === "purchases") {
+    if (activePage === "purchases" || activePage === "historico") {
       setLoadingPurchases(true);
       studentService.purchases()
         .then(setPurchases)
@@ -64,6 +70,35 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
   const totalRecebido = transfers.reduce((sum, t) => sum + t.quantidade, 0);
   const totalGasto = purchases.reduce((sum, p) => sum + p.custoMoedas, 0);
 
+  const history = [
+    ...transfers.map((t) => ({
+      id: `t-${t.id}`,
+      type: "credit",
+      name: t.professorName || "Professor",
+      description: t.motivo || "—",
+      amount: t.quantidade,
+      date: t.criadoEm,
+    })),
+    ...purchases.map((p) => ({
+      id: `p-${p.id}`,
+      type: "debit",
+      name: p.productName ? `Store: ${p.productName}` : "Loja",
+      description: p.productName ? `Resgate: ${p.productName}` : "—",
+      amount: p.custoMoedas,
+      date: p.criadoEm,
+    })),
+  ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  function getInitials(name) {
+    return name.split(" ").slice(0, 2).map((w) => w[0] || "").join("").toUpperCase();
+  }
+  const AVATAR_PALETTE = ["#f4b91f", "#7ec8e3", "#b8d4a8", "#f4a261", "#a8c5da", "#c4b5fd"];
+  function avatarBg(name) {
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+    return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
+  }
+
   return (
     <div className="app-shell">
       <Navbar
@@ -75,7 +110,7 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
         tabs={[
           { key: "products", label: "Produtos" },
           { key: "purchases", label: "Minhas Compras" },
-          { key: "transfers", label: "Extrato" },
+          { key: "historico", label: "Histórico" },
           { key: "account", label: "Minha Conta" },
         ]}
       />
@@ -143,43 +178,53 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
           </section>
         )}
 
-        {activePage === "transfers" && (
+        {activePage === "historico" && (
           <section className="professor-panel">
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">Moedas recebidas</p>
-                <h2>{transfers.length} transferencia(s) — {totalRecebido} moedas recebidas</h2>
+            <div className="tx-stats-row">
+              <div className="tx-stat-card">
+                <span className="tx-stat-label">TOTAL RECEBIDO</span>
+                <span className="tx-stat-value">{totalRecebido.toLocaleString("pt-BR")} HC</span>
+              </div>
+              <div className="tx-stat-card">
+                <span className="tx-stat-label">TOTAL DE TRANSAÇÕES</span>
+                <span className="tx-stat-value">{history.length}</span>
               </div>
             </div>
 
-            {loadingTransfers && (
+            <h2 style={{ margin: "28px 0 16px", fontWeight: 700, fontSize: "1.25rem" }}>Histórico de Transações</h2>
+
+            {(loadingTransfers || loadingPurchases) && (
               <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "32px" }}>Carregando...</p>
             )}
-            {!loadingTransfers && transfers.length === 0 && (
-              <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "32px" }}>Nenhuma transferencia recebida ainda.</p>
-            )}
-            {!loadingTransfers && transfers.length > 0 && (
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Professor</th>
-                      <th>Moedas</th>
-                      <th>Motivo</th>
-                      <th>Data</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transfers.map((t) => (
-                      <tr key={t.id}>
-                        <td>{t.professorName || "Professor"}</td>
-                        <td style={{ color: "var(--success, #38a169)", fontWeight: 600 }}>+{t.quantidade}</td>
-                        <td>{t.motivo}</td>
-                        <td>{t.criadoEm ? new Date(t.criadoEm).toLocaleString("pt-BR") : "—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {!(loadingTransfers || loadingPurchases) && (
+              <div className="tx-list">
+                {history.map((item) => (
+                  <div key={item.id} className="tx-item">
+                    <div
+                      className="tx-avatar"
+                      style={{ background: item.type === "debit" ? "#e2e8f0" : avatarBg(item.name) }}
+                    >
+                      {item.type === "debit" ? (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                        </svg>
+                      ) : getInitials(item.name)}
+                    </div>
+                    <div className="tx-info">
+                      <span className="tx-name">{item.name}</span>
+                      <span className="tx-desc">{item.description}</span>
+                    </div>
+                    <div className="tx-right">
+                      <span className="tx-date">
+                        {item.date ? new Date(item.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
+                      </span>
+                      <span className={`tx-amount ${item.type === "credit" ? "tx-credit" : "tx-debit-amount"}`}>
+                        {item.type === "credit" ? "+" : "-"}{item.amount} HC
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </section>

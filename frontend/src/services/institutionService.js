@@ -17,6 +17,10 @@ export const institutionService = {
     return apiRequest("/institutions/me/professors", { method: "POST", body: payload });
   },
 
+  updateProfessor(professorId, payload) {
+    return apiRequest(`/institutions/me/professors/${professorId}`, { method: "PUT", body: payload });
+  },
+
   deleteProfessor(professorId) {
     return apiRequest(`/institutions/me/professors/${professorId}`, { method: "DELETE" });
   },

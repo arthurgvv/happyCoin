@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 
-const COIN_SPAWN_INTERVAL = 95;
 const CATCH_RADIUS = 70;
 const CROP_RATIO = 1.0;
 
@@ -54,6 +53,7 @@ function makeCoin(canvasWidth, overrideX, overrideY, overrideVy) {
     size: 15 + Math.random() * 9,
     angle: Math.random() * Math.PI * 2,
     spin: (Math.random() - 0.5) * 0.09,
+    age: 0,
   };
 }
 
@@ -124,9 +124,6 @@ function PenguinCanvas() {
       penguinCy = penguinY;
       penguinHitR = penguinSprite ? (penguinSprite.height * scale * 0.38) : 80;
 
-      // Spawn coin
-      if (frame % COIN_SPAWN_INTERVAL === 0) coins.push(makeCoin(canvas.width));
-
       // Update + draw coins
       for (let i = coins.length - 1; i >= 0; i--) {
         const c = coins[i];
@@ -142,6 +139,7 @@ function PenguinCanvas() {
           }
         }
 
+        c.age++;
         c.vx *= 0.98;
         c.vy = Math.min(c.vy + 0.04, 5);
         c.x += c.vx;
@@ -149,7 +147,7 @@ function PenguinCanvas() {
         c.angle += c.spin;
 
         const dist = Math.hypot(c.x - cx, c.y - penguinY);
-        if (dist < CATCH_RADIUS) {
+        if (c.age > 20 && dist < CATCH_RADIUS) {
           coins.splice(i, 1);
           catchAnim = 20;
           continue;
@@ -195,6 +193,15 @@ function PenguinCanvas() {
       const y = (e.clientY - r.top) * (canvas.height / r.height);
       if (Math.hypot(x - penguinCx, y - penguinCy) < penguinHitR) {
         shakeAnim = 30;
+        const count = 6 + Math.floor(Math.random() * 5);
+        for (let j = 0; j < count; j++) {
+          const spread = ((j / count) * 2 - 1) * 1.1 + (Math.random() - 0.5) * 0.4;
+          const speed = 2.5 + Math.random() * 2.5;
+          const coin = makeCoin(canvas.width, penguinCx + (Math.random() - 0.5) * 16, penguinCy);
+          coin.vx = spread * speed;
+          coin.vy = -(speed * (0.6 + Math.random() * 0.6));
+          coins.push(coin);
+        }
       }
     }
 

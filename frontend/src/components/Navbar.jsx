@@ -1,4 +1,22 @@
 const NAV_ICONS = {
+  dashboard: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" />
+    </svg>
+  ),
+  wallet: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+      <line x1="1" y1="10" x2="23" y2="10" />
+    </svg>
+  ),
+  settings: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  ),
   products: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
@@ -72,7 +90,7 @@ const ROLE_LABELS = {
   INSTITUTION: "Instituição",
 };
 
-function Navbar({ activePage, onChangePage, onLogout, role, tabs, user }) {
+function Navbar({ activePage, onChangePage, onLogout, role, tabs, user, subtitle, footerCta }) {
   const navTabs = tabs ?? (
     role === "STUDENT"
       ? [{ key: "products", label: "Produtos" }, { key: "account", label: "Minha Conta" }]
@@ -88,9 +106,12 @@ function Navbar({ activePage, onChangePage, onLogout, role, tabs, user }) {
     <nav className="navbar">
       <div className="nav-brand">
         <img src="/assets/happycoin-logo.png" alt="Happy Coin" />
-        <span className="brand-wordmark" aria-label="HappyCoin">
-          <span className="brand-happy">Happy</span><span className="brand-coin">Coin</span>
-        </span>
+        <div>
+          <span className="brand-wordmark" aria-label="HappyCoin">
+            <span className="brand-happy">Happy</span><span className="brand-coin">Coin</span>
+          </span>
+          {subtitle && <p className="nav-brand-subtitle">{subtitle}</p>}
+        </div>
       </div>
 
       <div className="nav-actions">
@@ -106,6 +127,10 @@ function Navbar({ activePage, onChangePage, onLogout, role, tabs, user }) {
           </button>
         ))}
       </div>
+
+      {footerCta && (
+        <div className="nav-footer-cta">{footerCta}</div>
+      )}
 
       {user && (
         <div className="nav-user">

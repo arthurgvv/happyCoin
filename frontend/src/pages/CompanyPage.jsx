@@ -127,6 +127,7 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
       if (profileForm.nomeFantasia) payload.nomeFantasia = profileForm.nomeFantasia;
       if (profileForm.email) payload.email = profileForm.email;
       if (profileForm.senha) payload.senha = profileForm.senha;
+      if (profileForm.photoUrl) payload.photoUrl = profileForm.photoUrl;
 
       const updated = await companyService.update(payload);
       if (onUpdateUser) onUpdateUser(updated);

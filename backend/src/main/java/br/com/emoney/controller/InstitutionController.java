@@ -7,6 +7,7 @@ import br.com.emoney.dto.RegisterProfessorRequest;
 import br.com.emoney.dto.SemesterStartResponse;
 import br.com.emoney.dto.StudentResponse;
 import br.com.emoney.dto.UpdateInstitutionRequest;
+import br.com.emoney.dto.UpdateProfessorRequest;
 import br.com.emoney.model.AuthSession;
 import br.com.emoney.model.Professor;
 import br.com.emoney.model.UserRole;
@@ -62,6 +63,12 @@ public class InstitutionController {
         AuthSession session = requireInstitutionSession(authorization);
         Professor professor = institutionService.createProfessor(session.getUserId(), request, false);
         return new ProfessorResponse(professor);
+    }
+
+    @PutMapping("/me/professors/{professorId}")
+    public ProfessorResponse updateProfessor(@RequestHeader("Authorization") String authorization, @PathVariable UUID professorId, @RequestBody UpdateProfessorRequest request) {
+        AuthSession session = requireInstitutionSession(authorization);
+        return institutionService.updateProfessor(session.getUserId(), professorId, request);
     }
 
     @DeleteMapping("/me/professors/{professorId}")
