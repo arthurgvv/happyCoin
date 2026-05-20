@@ -56,7 +56,7 @@ public class ProfessorController {
     public java.util.List<String> courses(@RequestHeader("Authorization") String authorization) {
         AuthSession session = authService.requireSession(authorization);
         Professor professor = professorService.findEntityById(session.getUserId());
-        return professor.getCursos();
+        return professor.getCursos().stream().distinct().toList();
     }
 
     @GetMapping("/me/courses/{course}/students")
@@ -104,7 +104,7 @@ public class ProfessorController {
                 .map(t -> {
                     CoinTransferResponse r = new CoinTransferResponse(t);
                     studentRepository.findById(t.getStudentId()).ifPresent(s ->
-                            r.withStudentInfo(s.getNome(), s.getEmail(), s.getCurso()));
+                            r.withStudentInfo(s.getNome(), s.getEmail(), s.getCurso(), s.getPhotoUrl()));
                     return r;
                 })
                 .toList();

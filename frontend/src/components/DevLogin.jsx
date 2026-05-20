@@ -1,9 +1,15 @@
 import { useState } from "react";
 
 const DEV_ACCOUNTS = [
-  { label: "Aluno",       email: "aluno@aluno.com",          senha: "Aluno1234"   },
+  { label: "Aluno",       email: "aluno@aluno.com",          senha: "Aluno1234", fallbacks: [
+    { email: "carlosprates@aluno.com", senha: "Aluno1234" },
+    { email: "gabriel@aluno.pucminas.br", senha: "Aluno1234" },
+  ] },
   { label: "Professor",   email: "professor@emoney.com",     senha: "Professor123" },
-  { label: "Empresa",     email: "empresa@empresa.com",      senha: "Emp1234"     },
+  { label: "Empresa",     email: "empresa@empresa.com",      senha: "Emp1234", fallbacks: [
+    { email: "rammus@empresa.com", senha: "Emp1234" },
+    { email: "parceiro@mercadoaurora.com", senha: "Emp1234" },
+  ] },
   { label: "Instituição", email: "contato@pucminas.br",      senha: "PucMinas1"   },
 ];
 
@@ -24,7 +30,17 @@ function DevLogin({ onLogin }) {
   async function quickLogin(account) {
     setLoading(account.email);
     try {
-      await onLogin({ email: account.email, senha: account.senha });
+      const attempts = [{ email: account.email, senha: account.senha }, ...(account.fallbacks || [])];
+      let lastError;
+      for (const credentials of attempts) {
+        try {
+          const ok = await onLogin(credentials);
+          if (ok !== false) return;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError;
     } finally {
       setLoading(null);
     }

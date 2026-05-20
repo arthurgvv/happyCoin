@@ -38,8 +38,10 @@ function App() {
   async function handleLogin(payload) {
     try {
       await auth.login(payload);
+      return true;
     } catch (error) {
       setToast({ message: error.message, type: "error" });
+      return false;
     }
   }
 

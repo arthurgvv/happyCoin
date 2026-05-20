@@ -26,6 +26,19 @@ function avatarColor(name) {
   return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
 }
 
+function initials(name) {
+  return (name || "")
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+}
+
+function uniqueList(values = []) {
+  return [...new Set(values.filter(Boolean))];
+}
+
 const COURSE_ABBR = {
   "Administracao": "ADM",
   "Arquitetura e Urbanismo": "ARQ",
@@ -142,7 +155,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
 
   function openEditProfessor(professor) {
     setEditingProfessor(professor);
-    setEditForm({ nome: professor.nome, email: professor.email, senha: "", cursos: professor.cursos || [] });
+    setEditForm({ nome: professor.nome, email: professor.email, senha: "", cursos: uniqueList(professor.cursos || []) });
   }
 
   function toggleEditCurso(curso) {
@@ -233,6 +246,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
         onLogout={onLogout}
         role="INSTITUTION"
         user={user}
+        subtitle="Portal da Instituição"
         tabs={[
           { key: "overview", label: "Visao Geral" },
           { key: "professors", label: "Professores" },
@@ -279,7 +293,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                     {professors.length > 0 && (
                       <div className="avatar-group">
                         {professors.slice(0, 4).map((p) => {
-                          const ini = p.nome.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+                          const ini = initials(p.nome);
                           return (
                             <div key={p.id} className="avatar-group-item" title={p.nome}>
                               {p.photoUrl ? <img src={p.photoUrl} alt={p.nome} /> : ini}
@@ -340,7 +354,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                 </div>
               )}
 
-              <section className="professor-panel">
+              <section className="professor-panel semester-panel">
                 <div className="section-heading">
                   <div>
                     <p className="eyebrow">Diretório institucional</p>
@@ -364,13 +378,13 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                     ? <p className="empty-state">Nenhum professor vinculado.</p>
                     : (
                       <div className="table-wrap">
-                        <table>
+                        <table className="institution-dir-table">
                           <thead>
                             <tr><th>Professor</th><th>Cursos</th><th className="balance-col">Saldo</th></tr>
                           </thead>
                           <tbody>
                             {professors.map((p) => {
-                              const ini = p.nome.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+                              const ini = initials(p.nome);
                               return (
                                 <tr key={p.id}>
                                   <td>
@@ -386,7 +400,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                                   </td>
                                   <td>
                                     <div className="dept-chips">
-                                      {(p.cursos || []).slice(0, 2).map((c) => (
+                                      {uniqueList(p.cursos || []).slice(0, 2).map((c) => (
                                         <span key={c} className="dept-chip">{c}</span>
                                       ))}
                                     </div>
@@ -411,13 +425,13 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                     ? <p className="empty-state">Nenhum aluno cadastrado.</p>
                     : (
                       <div className="table-wrap">
-                        <table>
+                        <table className="institution-dir-table">
                           <thead>
                             <tr><th>Aluno</th><th>Curso</th><th className="balance-col">Saldo</th></tr>
                           </thead>
                           <tbody>
                             {students.map((s) => {
-                              const ini = s.nome.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+                              const ini = initials(s.nome);
                               return (
                                 <tr
                                   key={s.id}
@@ -437,9 +451,9 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                                   </td>
                                   <td>{s.curso && <span className="dept-chip">{s.curso}</span>}</td>
                                   <td className="balance-col">
-                                    <span className="balance-pill">
-                                      <span className="balance-dot" />
-                                      {(s.saldoMoedas || 0).toLocaleString("pt-BR")} moedas
+                                    <span className="coin-balance">
+                                      <span className="coin-balance-icon">$</span>
+                                      {(s.saldoMoedas || 0).toLocaleString("pt-BR")}
                                     </span>
                                   </td>
                                 </tr>
@@ -462,7 +476,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                           </thead>
                           <tbody>
                             {companies.map((c) => {
-                              const ini = c.nomeFantasia.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+                              const ini = initials(c.nomeFantasia);
                               return (
                                 <tr key={c.id}>
                                   <td>
@@ -487,15 +501,24 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                 )}
               </section>
 
-              <section className="professor-panel">
+              <section className="professor-panel semester-credit-card">
+                <div className="semester-credit-icon" aria-hidden="true">$</div>
                 <div className="section-heading">
-                  <div>
+                  <div className="semester-credit-copy">
                     <p className="eyebrow">Semestre letivo</p>
                     <h2>Distribuir créditos aos professores</h2>
+                    <p>Credite 1.000 HC para cada docente ativo e renove o saldo de distribuição da instituição.</p>
                   </div>
-                  <button className="button button-primary" type="button" onClick={handleStartSemester} disabled={startingSemester}>
-                    {startingSemester ? "Iniciando..." : "Iniciar semestre (+1000 moedas)"}
-                  </button>
+                  <div className="semester-credit-summary">
+                    <span>{professors.length}</span>
+                    <small>professores</small>
+                  </div>
+                  <div className="semester-credit-action">
+                    <button className="button button-primary" type="button" onClick={handleStartSemester} disabled={startingSemester}>
+                      {startingSemester ? "Iniciando..." : "Iniciar semestre"}
+                    </button>
+                    <span>+1.000 HC por professor</span>
+                  </div>
                 </div>
               </section>
             </>
@@ -602,10 +625,10 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                         return p.nome.toLowerCase().includes(q) || p.email.toLowerCase().includes(q);
                       })
                       .map((p) => {
-                        const ini = p.nome.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+                        const ini = initials(p.nome);
                         return (
                           <tr key={p.id}>
-                            <td className="balance-col">
+                            <td>
                               <div className="table-name-cell">
                                 <div className="table-avatar">
                                   {p.photoUrl ? <img src={p.photoUrl} alt={p.nome} /> : ini}
@@ -618,7 +641,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                             <td style={{ color: "var(--primary-strong)", fontWeight: 500 }}>{p.email}</td>
                             <td>
                               <div className="dept-chips">
-                                {(p.cursos || []).map((c) => (
+                                {uniqueList(p.cursos || []).map((c) => (
                                   <span key={c} className="dept-chip">{c}</span>
                                 ))}
                               </div>
@@ -768,10 +791,10 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                       </thead>
                       <tbody>
                         {list.map((s) => {
-                          const ini = s.nome.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+                          const ini = initials(s.nome);
                           return (
                             <tr key={s.id}>
-                              <td className="balance-col">
+                              <td>
                                 <div className="table-name-cell">
                                   <div className="table-avatar" style={{ background: avatarColor(s.nome), color: "#fff" }}>
                                     {s.photoUrl ? <img src={s.photoUrl} alt={s.nome} /> : ini}
@@ -875,7 +898,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                       ? <img src={profileForm.photoUrl} alt="Logo" />
                       : (user.photoUrl
                           ? <img src={user.photoUrl} alt="Logo" />
-                          : user.nome.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase())}
+                          : initials(user.nome))}
                     <span className="profile-logo-badge" aria-hidden="true">
                       <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10">
                         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>

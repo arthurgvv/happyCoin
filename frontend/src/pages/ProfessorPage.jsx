@@ -30,6 +30,10 @@ function initials(name) {
     .toUpperCase();
 }
 
+function uniqueList(values = []) {
+  return [...new Set(values.filter(Boolean))];
+}
+
 const COIN_ICON = (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10" />
@@ -83,7 +87,7 @@ const FILTER_ICON = (
 
 function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
   const [activePage, setActivePage] = useState("dashboard");
-  const [courses, setCourses] = useState(user.cursos || []);
+  const [courses, setCourses] = useState(uniqueList(user.cursos || []));
   const [transfers, setTransfers] = useState([]);
   const [loadingTransfers, setLoadingTransfers] = useState(false);
   const [profileForm, setProfileForm] = useState(emptyProfile);
@@ -99,13 +103,12 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showPwdChange, setShowPwdChange] = useState(false);
-  const [twoFa, setTwoFa] = useState(false);
   const coursesLoadedRef = useRef(false);
 
   // Load courses once
   useEffect(() => {
     if (!coursesLoadedRef.current && (user.cursos || []).length === 0) {
-      professorService.courses().then(setCourses).catch(() => {});
+      professorService.courses().then((crs) => setCourses(uniqueList(crs))).catch(() => {});
     }
     coursesLoadedRef.current = true;
   }, []);
@@ -117,7 +120,7 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
         professorService.transfers(),
         professorService.courses(),
       ])
-        .then(([txs, crs]) => { setTransfers(txs); setCourses(crs); })
+        .then(([txs, crs]) => { setTransfers(txs); setCourses(uniqueList(crs)); })
         .catch(() => {})
         .finally(() => setLoadingTransfers(false));
     }
@@ -129,7 +132,7 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
         .finally(() => setLoadingTransfers(false));
     }
     if (activePage === "students") {
-      professorService.courses().then(setCourses).catch(() => {});
+      professorService.courses().then((crs) => setCourses(uniqueList(crs))).catch(() => {});
       if (transfers.length === 0) {
         professorService.transfers().then(setTransfers).catch(() => {});
       }
@@ -139,12 +142,12 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
       professorService.me()
         .then((prof) => {
           if (prof.cursos && prof.cursos.length > 0) {
-            setProfileForm((prev) => ({ ...prev, cursos: prof.cursos }));
+            setProfileForm((prev) => ({ ...prev, cursos: uniqueList(prof.cursos) }));
           }
         })
         .catch(() => {
           if (user.cursos && user.cursos.length > 0) {
-            setProfileForm((prev) => ({ ...prev, cursos: user.cursos }));
+            setProfileForm((prev) => ({ ...prev, cursos: uniqueList(user.cursos) }));
           }
         });
     }
@@ -156,11 +159,11 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
     }
   }, [user.ultimoAviso, onToast]);
 
-  // Load dir students when on students tab, courses ready, or filter changes
+  // Load directory students to render cards and to enrich transfer avatars.
   useEffect(() => {
-    if (activePage !== "students" || courses.length === 0) return;
+    if (!["dashboard", "wallet", "students"].includes(activePage) || courses.length === 0) return;
     setLoadingDir(true);
-    const toLoad = (studentFilter && studentFilter !== "all") ? [studentFilter] : courses;
+    const toLoad = (activePage === "students" && studentFilter && studentFilter !== "all") ? [studentFilter] : courses;
     Promise.all(
       toLoad.map((c) =>
         professorService.studentsByCourse(c)
@@ -237,7 +240,7 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
 
       const updated = await professorService.update(payload);
       onUpdateUser(updated);
-      setCourses(updated.cursos || courses);
+      setCourses(uniqueList(updated.cursos || courses));
       setProfileForm(emptyProfile);
       onToast({ message: "Perfil atualizado com sucesso.", type: "success" });
     } catch (error) {
@@ -262,6 +265,20 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
   const budgetPercent = totalBudget > 0 ? Math.round((totalDistributed / totalBudget) * 100) : 0;
   const activeStudents = new Set(transfers.map((t) => t.studentName)).size;
   const recentActivity = transfers.slice(0, 3);
+  const studentPhotoByKey = useMemo(() => {
+    const map = new Map();
+    dirStudents.forEach((student) => {
+      if (!student.photoUrl) return;
+      if (student.id) map.set(student.id, student.photoUrl);
+      if (student.email) map.set(student.email, student.photoUrl);
+    });
+    return map;
+  }, [dirStudents]);
+  const transferStudentPhoto = (transfer) =>
+    transfer.studentPhotoUrl
+    || studentPhotoByKey.get(transfer.studentId)
+    || studentPhotoByKey.get(transfer.studentEmail)
+    || null;
   const filteredDirStudents = dirStudents.filter((s) => {
     const q = searchTerm.trim().toLowerCase();
     if (!q) return true;
@@ -275,19 +292,6 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
   const firstName = (user.nome || "Professor").split(" ")[0];
   const userInitials = initials(user.nome);
 
-  const distributeBtn = (
-    <button
-      className="prof-distribute-btn"
-      type="button"
-      onClick={() => setActivePage("students")}
-    >
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-      </svg>
-      Distribuir Moedas
-    </button>
-  );
-
   return (
     <div className="app-shell">
       <Navbar
@@ -297,7 +301,6 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
         role="PROFESSOR"
         user={user}
         subtitle="Portal do Professor"
-        footerCta={distributeBtn}
         tabs={[
           { key: "dashboard", label: "Painel" },
           { key: "wallet", label: "Carteira" },
@@ -325,21 +328,13 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
             </div>
           )}
           <div className="prof-topbar-icons">
-            {(activePage === "students" || activePage === "wallet" || activePage === "dashboard") && (
-              <button
-                className="prof-topbar-distribute-btn"
-                type="button"
-                onClick={() => { setActivePage("students"); onToast({ message: "Escolha um aluno e clique em Distribuir.", type: "success" }); }}
-              >
-                {DISTRIBUTE_ICON}
-                Distribuir Moedas
+            {activePage !== "settings" && (
+              <button className="prof-topbar-avatar" type="button" onClick={() => setActivePage("settings")} aria-label="Abrir perfil">
+                {user.photoUrl
+                  ? <img src={user.photoUrl} alt={user.nome} />
+                  : userInitials}
               </button>
             )}
-            <button className="prof-topbar-avatar" type="button" onClick={() => setActivePage("settings")} aria-label="Abrir perfil">
-              {user.photoUrl
-                ? <img src={user.photoUrl} alt={user.nome} />
-                : userInitials}
-            </button>
           </div>
         </header>
 
@@ -402,9 +397,12 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
 
                   {recentActivity.map((t) => {
                     const ini = initials(t.studentName || "");
+                    const photoUrl = transferStudentPhoto(t);
                     return (
                       <div className="activity-item" key={t.id}>
-                        <div className="activity-avatar">{ini}</div>
+                        <div className="activity-avatar">
+                          {photoUrl ? <img src={photoUrl} alt={t.studentName || "Aluno"} /> : ini}
+                        </div>
                         <div className="activity-info">
                           <p className="activity-name">{t.studentName}</p>
                           <p className="activity-desc">{t.motivo}</p>
@@ -552,7 +550,9 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
                         <tr key={t.id}>
                           <td>
                             <div className="table-name-cell">
-                              <div className="table-avatar wallet-dist-avatar">{initials(t.studentName || "")}</div>
+                              <div className="table-avatar wallet-dist-avatar">
+                                {transferStudentPhoto(t) ? <img src={transferStudentPhoto(t)} alt={t.studentName || "Aluno"} /> : initials(t.studentName || "")}
+                              </div>
                               <div className="table-name-meta">
                                 <strong>{t.studentName}</strong>
                                 <span>{t.studentCourse || "—"}</span>
@@ -698,7 +698,9 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
                           <tr key={t.id}>
                             <td>
                               <div className="table-name-cell">
-                                <div className="table-avatar">{initials(t.studentName || "")}</div>
+                                <div className="table-avatar">
+                                  {transferStudentPhoto(t) ? <img src={transferStudentPhoto(t)} alt={t.studentName || "Aluno"} /> : initials(t.studentName || "")}
+                                </div>
                                 <span>{t.studentName}</span>
                               </div>
                             </td>
@@ -868,20 +870,6 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
                         </div>
                       </form>
                     )}
-                    <div className="settings-divider" style={{ margin: "20px 0" }} />
-                    <div className="settings-2fa-row">
-                      <div className="settings-2fa-info">
-                        <div className="settings-2fa-title-row">
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                          </svg>
-                          <strong>Autenticação de Dois Fatores</strong>
-                        </div>
-                        <p>Adicione uma camada extra de segurança à sua conta.</p>
-                      </div>
-                      <button className={`settings-toggle${twoFa ? " is-on" : ""}`} type="button"
-                        onClick={() => setTwoFa((v) => !v)} aria-label="Ativar autenticação de dois fatores" />
-                    </div>
                   </div>
                 </div>
               </div>

@@ -12,7 +12,9 @@ public class CoinTransferResponse {
     private String studentName;
     private String studentEmail;
     private String studentCourse;
+    private String studentPhotoUrl;
     private String professorName;
+    private String professorPhotoUrl;
     private int quantidade;
     private String motivo;
     private LocalDateTime criadoEm;
@@ -39,8 +41,22 @@ public class CoinTransferResponse {
         return this;
     }
 
+    public CoinTransferResponse withStudentInfo(String name, String email, String course, String photoUrl) {
+        this.studentName = name;
+        this.studentEmail = email;
+        this.studentCourse = course;
+        this.studentPhotoUrl = photoUrl;
+        return this;
+    }
+
     public CoinTransferResponse withProfessorName(String name) {
         this.professorName = name;
+        return this;
+    }
+
+    public CoinTransferResponse withProfessorInfo(String name, String photoUrl) {
+        this.professorName = name;
+        this.professorPhotoUrl = photoUrl;
         return this;
     }
 
@@ -50,7 +66,9 @@ public class CoinTransferResponse {
     public String getStudentName() { return studentName; }
     public String getStudentEmail() { return studentEmail; }
     public String getStudentCourse() { return studentCourse; }
+    public String getStudentPhotoUrl() { return studentPhotoUrl; }
     public String getProfessorName() { return professorName; }
+    public String getProfessorPhotoUrl() { return professorPhotoUrl; }
     public int getQuantidade() { return quantidade; }
     public String getMotivo() { return motivo; }
     public LocalDateTime getCriadoEm() { return criadoEm; }

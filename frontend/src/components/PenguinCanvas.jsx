@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-const CATCH_RADIUS = 70;
+const CATCH_RADIUS = 46;
 const CROP_RATIO = 1.0;
 
 function buildPenguinSprite(img) {
@@ -50,7 +50,7 @@ function makeCoin(canvasWidth, overrideX, overrideY, overrideVy) {
     y: overrideY ?? -30,
     vy: overrideVy ?? 1.3 + Math.random() * 1.7,
     vx: (Math.random() - 0.5) * 0.8,
-    size: 15 + Math.random() * 9,
+    size: 26 + Math.random() * 10,
     angle: Math.random() * Math.PI * 2,
     spin: (Math.random() - 0.5) * 0.09,
     age: 0,
@@ -89,24 +89,43 @@ function PenguinCanvas() {
     }
 
     function drawCoin(c) {
+      const sprite = [
+        "....OO...",
+        "...OYYO.",
+        "..OYYYYO",
+        ".OYYYYYO",
+        ".OYWWYYO",
+        ".OYWWYYO",
+        ".OYYYBBO",
+        ".OYYYBBO",
+        "..OYYYO.",
+        "...ODDO.",
+        "....OO..",
+      ];
+      const palette = {
+        O: "#050505",
+        D: "#d39a2f",
+        Y: "#ffe500",
+        W: "#fff9d7",
+        B: "#111111",
+      };
+      const pixel = Math.max(2, Math.round(c.size / 9));
+      const w = sprite[0].length * pixel;
+      const h = sprite.length * pixel;
+      const squash = 0.82 + Math.sin(c.angle) * 0.12;
+
       ctx.save();
       ctx.translate(c.x, c.y);
-      const g = ctx.createRadialGradient(-c.size * 0.3, -c.size * 0.3, 0, 0, 0, c.size);
-      g.addColorStop(0, "#fff176");
-      g.addColorStop(0.55, "#f4b91f");
-      g.addColorStop(1, "#b87700");
-      ctx.beginPath();
-      ctx.arc(0, 0, c.size, 0, Math.PI * 2);
-      ctx.fillStyle = g;
-      ctx.fill();
-      ctx.strokeStyle = "rgba(0,0,0,0.1)";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      ctx.fillStyle = "rgba(140,70,0,0.9)";
-      ctx.font = `bold ${Math.round(c.size * 0.9)}px Inter,sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("H", 0, 0);
+      ctx.scale(squash, 1);
+      ctx.imageSmoothingEnabled = false;
+      for (let row = 0; row < sprite.length; row++) {
+        for (let col = 0; col < sprite[row].length; col++) {
+          const key = sprite[row][col];
+          if (key === ".") continue;
+          ctx.fillStyle = palette[key];
+          ctx.fillRect(col * pixel - w / 2, row * pixel - h / 2, pixel, pixel);
+        }
+      }
       ctx.restore();
     }
 
@@ -122,9 +141,9 @@ function PenguinCanvas() {
       const scale = Math.min(0.58, (canvas.height * 0.58) / (penguinSprite ? penguinSprite.height : 400));
       penguinCx = cx;
       penguinCy = penguinY;
-      penguinHitR = penguinSprite ? (penguinSprite.height * scale * 0.38) : 80;
+      penguinHitR = penguinSprite ? Math.max(150, penguinSprite.height * scale * 0.48) : 150;
 
-      // Update + draw coins
+      // Update coins before drawing so the burst can render in front of the mascot.
       for (let i = coins.length - 1; i >= 0; i--) {
         const c = coins[i];
 
@@ -154,7 +173,6 @@ function PenguinCanvas() {
         }
 
         if (c.y - c.size > canvas.height) { coins.splice(i, 1); continue; }
-        drawCoin(c);
       }
 
       // Penguin
@@ -176,32 +194,43 @@ function PenguinCanvas() {
         ctx.restore();
       }
 
+      for (const coin of coins) {
+        drawCoin(coin);
+      }
+
       animId = requestAnimationFrame(loop);
+    }
+
+    function isNearPenguin(x, y) {
+      return Math.hypot(x - penguinCx, y - penguinCy) < penguinHitR;
+    }
+
+    function burstCoins(originX, originY) {
+      shakeAnim = 30;
+      const count = 10 + Math.floor(Math.random() * 5);
+      for (let j = 0; j < count; j++) {
+        const spread = ((j / Math.max(count - 1, 1)) * 2 - 1) * 1.15 + (Math.random() - 0.5) * 0.35;
+        const speed = 3.2 + Math.random() * 2.8;
+        const coin = makeCoin(canvas.width, originX + (Math.random() - 0.5) * 22, originY - 26 + (Math.random() - 0.5) * 12);
+        coin.vx = spread * speed;
+        coin.vy = -(speed * (0.75 + Math.random() * 0.55));
+        coins.push(coin);
+      }
     }
 
     function onMouseMove(e) {
       const r = canvas.getBoundingClientRect();
       mouseX = (e.clientX - r.left) * (canvas.width / r.width);
       mouseY = (e.clientY - r.top) * (canvas.height / r.height);
-      const overPenguin = Math.hypot(mouseX - penguinCx, mouseY - penguinCy) < penguinHitR;
-      canvas.style.cursor = overPenguin ? "pointer" : "default";
+      canvas.style.cursor = isNearPenguin(mouseX, mouseY) ? "pointer" : "default";
     }
     function onMouseLeave() { mouseX = null; mouseY = null; }
     function onClick(e) {
       const r = canvas.getBoundingClientRect();
       const x = (e.clientX - r.left) * (canvas.width / r.width);
       const y = (e.clientY - r.top) * (canvas.height / r.height);
-      if (Math.hypot(x - penguinCx, y - penguinCy) < penguinHitR) {
-        shakeAnim = 30;
-        const count = 6 + Math.floor(Math.random() * 5);
-        for (let j = 0; j < count; j++) {
-          const spread = ((j / count) * 2 - 1) * 1.1 + (Math.random() - 0.5) * 0.4;
-          const speed = 2.5 + Math.random() * 2.5;
-          const coin = makeCoin(canvas.width, penguinCx + (Math.random() - 0.5) * 16, penguinCy);
-          coin.vx = spread * speed;
-          coin.vy = -(speed * (0.6 + Math.random() * 0.6));
-          coins.push(coin);
-        }
+      if (isNearPenguin(x, y)) {
+        burstCoins(x, y);
       }
     }
 

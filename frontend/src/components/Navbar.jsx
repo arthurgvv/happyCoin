@@ -19,15 +19,21 @@ const NAV_ICONS = {
   ),
   products: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" />
+      <path d="M6 7h12l1 14H5L6 7Z" />
+      <path d="M9 7a3 3 0 0 1 6 0" />
     </svg>
   ),
   purchases: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <path d="M16 10a4 4 0 0 1-8 0" />
+      <path d="M7 3h10v18l-2-1-2 1-2-1-2 1-2-1V3Z" />
+      <path d="M9 8h6M9 12h6M9 16h4" />
+    </svg>
+  ),
+  historico: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12a9 9 0 1 0 3-6.7" />
+      <path d="M3 4v5h5" />
+      <path d="M12 7v5l3 2" />
     </svg>
   ),
   transfers: (
@@ -103,7 +109,7 @@ function Navbar({ activePage, onChangePage, onLogout, role, tabs, user, subtitle
     : "?";
 
   return (
-    <nav className="navbar">
+    <nav className={`navbar${role === "PROFESSOR" || role === "STUDENT" || role === "COMPANY" ? " navbar-professor" : ""}`}>
       <div className="nav-brand">
         <img src="/assets/happycoin-logo.png" alt="Happy Coin" />
         <div>
@@ -122,8 +128,17 @@ function Navbar({ activePage, onChangePage, onLogout, role, tabs, user, subtitle
             type="button"
             onClick={() => onChangePage(tab.key)}
           >
-            {NAV_ICONS[tab.key] ?? NAV_ICONS.overview}
-            {tab.label}
+            {role === "PROFESSOR" ? (
+              <>
+                {tab.label}
+                {NAV_ICONS[tab.key] ?? NAV_ICONS.overview}
+              </>
+            ) : (
+              <>
+                {NAV_ICONS[tab.key] ?? NAV_ICONS.overview}
+                {tab.label}
+              </>
+            )}
           </button>
         ))}
       </div>

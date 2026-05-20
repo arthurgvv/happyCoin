@@ -6,7 +6,9 @@ import br.com.emoney.dto.StudentResponse;
 import br.com.emoney.dto.UpdateStudentRequest;
 import br.com.emoney.model.AuthSession;
 import br.com.emoney.model.UserRole;
+import br.com.emoney.repository.CompanyRepository;
 import br.com.emoney.repository.ProfessorRepository;
+import br.com.emoney.repository.ProductRepository;
 import br.com.emoney.repository.ProductPurchaseRepository;
 import br.com.emoney.repository.TransferRepository;
 import br.com.emoney.service.AuthService;
@@ -33,14 +35,18 @@ public class StudentController {
     private final TransferRepository transferRepository;
     private final ProductPurchaseRepository purchaseRepository;
     private final ProfessorRepository professorRepository;
+    private final CompanyRepository companyRepository;
+    private final ProductRepository productRepository;
 
-    public StudentController(StudentService studentService, AuthService authService, InstitutionService institutionService, TransferRepository transferRepository, ProductPurchaseRepository purchaseRepository, ProfessorRepository professorRepository) {
+    public StudentController(StudentService studentService, AuthService authService, InstitutionService institutionService, TransferRepository transferRepository, ProductPurchaseRepository purchaseRepository, ProfessorRepository professorRepository, CompanyRepository companyRepository, ProductRepository productRepository) {
         this.studentService = studentService;
         this.authService = authService;
         this.institutionService = institutionService;
         this.transferRepository = transferRepository;
         this.purchaseRepository = purchaseRepository;
         this.professorRepository = professorRepository;
+        this.companyRepository = companyRepository;
+        this.productRepository = productRepository;
     }
 
     @GetMapping
@@ -74,7 +80,7 @@ public class StudentController {
                 .map(t -> {
                     CoinTransferResponse r = new CoinTransferResponse(t);
                     professorRepository.findById(t.getProfessorId()).ifPresent(p ->
-                            r.withProfessorName(p.getNome()));
+                            r.withProfessorInfo(p.getNome(), p.getPhotoUrl()));
                     return r;
                 })
                 .toList();
@@ -87,7 +93,20 @@ public class StudentController {
             throw new ResponseStatusException(FORBIDDEN, "Apenas alunos podem acessar esta area.");
         }
         return purchaseRepository.findByStudentIdOrderByCriadoEmDesc(session.getUserId())
-                .stream().map(ProductPurchaseResponse::new).toList();
+                .stream()
+                .map(purchase -> {
+                    ProductPurchaseResponse response = new ProductPurchaseResponse(purchase);
+                    if (purchase.getCompanyId() != null) {
+                        companyRepository.findById(purchase.getCompanyId())
+                                .ifPresent(company -> response.withCompanyInfo(company.getNomeFantasia(), company.getPhotoUrl()));
+                    }
+                    if (purchase.getProductId() != null) {
+                        productRepository.findById(purchase.getProductId())
+                                .ifPresent(product -> response.withProductImage(product.getImageUrl()));
+                    }
+                    return response;
+                })
+                .toList();
     }
 
     @GetMapping("/institutions")

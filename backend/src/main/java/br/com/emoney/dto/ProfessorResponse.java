@@ -3,6 +3,7 @@ package br.com.emoney.dto;
 import br.com.emoney.model.Professor;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class ProfessorResponse {
@@ -23,7 +24,12 @@ public class ProfessorResponse {
         this.cpf = professor.getCpf();
         this.email = professor.getEmail();
         this.institutionId = professor.getInstitutionId();
-        this.cursos = professor.getCursos();
+        this.cursos = professor.getCursos() == null
+                ? List.of()
+                : professor.getCursos().stream()
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .toList();
         this.saldoMoedas = professor.getSaldoMoedas();
         this.ultimoAviso = professor.getUltimoAviso();
         this.photoUrl = professor.getPhotoUrl();

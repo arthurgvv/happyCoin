@@ -160,7 +160,12 @@ public class ProductService {
     public List<ProductPurchaseResponse> purchasesByCompany(UUID companyId) {
         return purchaseRepository.findByCompanyIdOrderByCriadoEmDesc(companyId)
                 .stream()
-                .map(ProductPurchaseResponse::new)
+                .map(purchase -> {
+                    ProductPurchaseResponse response = new ProductPurchaseResponse(purchase);
+                    studentRepository.findById(purchase.getStudentId()).ifPresent(student ->
+                            response.withStudentInfo(student.getNome(), student.getEmail(), student.getPhotoUrl()));
+                    return response;
+                })
                 .toList();
     }
 }
