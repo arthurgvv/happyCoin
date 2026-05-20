@@ -299,10 +299,6 @@ Os testes cobrem as regras de negocio dos services (`InstitutionService`, `Profe
 | Arthur Goncalves Vieira | <div align="center"><img src="https://github.com/arthurgv.png" width="70px" height="70px"></div> | <div align="center"><a href="https://github.com/arthurgv"><img src="https://joaopauloaramuni.github.io/image/github6.png" width="50px" height="50px"></a></div> |
 | Matheus Guilherme | <div align="center"><img src="https://github.com/matheusguil.png" width="70px" height="70px"></div> | <div align="center"><a href="https://github.com/matheusguil"><img src="https://joaopauloaramuni.github.io/image/github6.png" width="50px" height="50px"></a></div> |
 | Miguel Moreira | <div align="center"><img src="https://github.com/miguelmoreira.png" width="70px" height="70px"></div> | <div align="center"><a href="https://github.com/miguelmoreira"><img src="https://joaopauloaramuni.github.io/image/github6.png" width="50px" height="50px"></a></div> |
-
-> Disciplina: Laboratorio de Desenvolvimento de Software — PUC Minas
-> Professor: Joao Paulo Carneiro Aramuni
-
 | 👤 Nome | 🖼️ Foto | GitHub | LinkedIn | Email |
 |--------|--------|--------|----------|-------|
 | Arthur Gonçalves Vieira | <img src="https://github.com/arthurgvv/portfolio-profissional/blob/b2ba05915144647c956bac70dcb435ec0ce55927/portfolio/src/assets/styles/profile.jpg" width="100px" style="border-radius:50%;"> | <a href="https://github.com/arthurgvv"><img src="https://img.shields.io/badge/GitHub-000?style=for-the-badge&logo=github&logoColor=white"></a> | <a href="https://www.linkedin.com/in/arthur-goncalves-62b15232a/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white"></a> | <a href="mailto:arthurgvkj@gmail.com"><img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white"></a> |
@@ -310,6 +306,7 @@ Os testes cobrem as regras de negocio dos services (`InstitutionService`, `Profe
 | Miguel Moreira | Adicionar foto | Adicionar GitHub | Adicionar LinkedIn | Adicionar email |
 
 ---
+> Disciplina: Laboratorio de Desenvolvimento de Software — PUC Minas
 
 ## Licença
 
