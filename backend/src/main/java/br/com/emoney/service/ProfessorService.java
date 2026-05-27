@@ -23,12 +23,14 @@ public class ProfessorService {
     private final StudentService studentService;
     private final TransferRepository transferRepository;
     private final ValidationService validationService;
+    private final EmailService emailService;
 
-    public ProfessorService(ProfessorRepository professorRepository, StudentService studentService, TransferRepository transferRepository, ValidationService validationService) {
+    public ProfessorService(ProfessorRepository professorRepository, StudentService studentService, TransferRepository transferRepository, ValidationService validationService, EmailService emailService) {
         this.professorRepository = professorRepository;
         this.studentService = studentService;
         this.transferRepository = transferRepository;
         this.validationService = validationService;
+        this.emailService = emailService;
     }
 
     public Professor findEntityById(java.util.UUID professorId) {
@@ -70,6 +72,8 @@ public class ProfessorService {
         professorRepository.save(professor);
         studentService.save(student);
         transferRepository.save(new CoinTransfer(professor.getId(), student.getId(), request.getQuantidade(), motivo));
+        emailService.sendCoinTransferConfirmation(professor, student, request.getQuantidade(), motivo);
+        emailService.sendCoinReceivedNotification(professor, student, request.getQuantidade(), motivo);
 
         return new ProfessorResponse(professor);
     }
