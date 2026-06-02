@@ -28,4 +28,24 @@ export const studentService = {
   purchases() {
     return apiRequest("/students/me/purchases");
   },
+
+  professors() {
+    return apiRequest("/students/me/professors");
+  },
+
+  sendEmail(payload) {
+    return apiRequest("/students/me/send-email", { method: "POST", body: payload });
+  },
+
+  inbox() {
+    return apiRequest("/students/me/inbox");
+  },
+
+  sent() {
+    return apiRequest("/students/me/sent");
+  },
+
+  markRead(id) {
+    return apiRequest(`/students/me/inbox/${id}/read`, { method: "PUT" });
+  },
 };

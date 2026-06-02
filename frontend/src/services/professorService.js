@@ -24,4 +24,20 @@ export const professorService = {
   transfers() {
     return apiRequest("/professors/me/transfers");
   },
+
+  sendEmail(payload) {
+    return apiRequest("/professors/me/send-email", { method: "POST", body: payload });
+  },
+
+  inbox() {
+    return apiRequest("/professors/me/inbox");
+  },
+
+  sent() {
+    return apiRequest("/professors/me/sent");
+  },
+
+  markRead(id) {
+    return apiRequest(`/professors/me/inbox/${id}/read`, { method: "PUT" });
+  },
 };

@@ -133,6 +133,7 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
     activePage === "products" ? "Catálogo do Aluno"
       : activePage === "purchases" ? "Minhas Compras"
       : activePage === "historico" ? "Histórico"
+      : activePage === "emails" ? "E-mails"
       : "Configurações";
 
   const searchPlaceholder =
@@ -154,6 +155,7 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
           { key: "products", label: "Produtos" },
           { key: "purchases", label: "Minhas Compras" },
           { key: "historico", label: "Histórico" },
+          { key: "emails", label: "E-mails" },
           { key: "account", label: "Configurações" },
         ]}
       />
@@ -230,6 +232,10 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
               totalRecebido={totalRecebido}
               loading={loadingTransfers || loadingPurchases}
             />
+          )}
+
+          {activePage === "emails" && (
+            <StudentEmailSection />
           )}
 
           {activePage === "account" && (
@@ -393,6 +399,215 @@ function formatLongDate(date) {
 function formatShortDate(date) {
   if (!date) return "-";
   return new Date(date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).replace(".", "");
+}
+
+function timeAgo(dateString) {
+  if (!dateString) return "—";
+  const diff = Date.now() - new Date(dateString).getTime();
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return "Agora";
+  if (hours < 24) return `${hours}h atrás`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "Ontem";
+  return `${days}d atrás`;
+}
+
+function StudentEmailSection() {
+  const [view, setView] = useState("inbox"); // "inbox" | "sent" | "compose" | "read"
+  const [inboxMsgs, setInboxMsgs] = useState([]);
+  const [sentMsgs, setSentMsgs] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [readSource, setReadSource] = useState("inbox");
+  const [professors, setProfessors] = useState([]);
+  const [professorId, setProfessorId] = useState("");
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [sending, setSending] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+
+  function loadInbox() {
+    studentService.inbox().then(setInboxMsgs).catch(() => {});
+  }
+  function loadSent() {
+    studentService.sent().then(setSentMsgs).catch(() => {});
+  }
+
+  useEffect(() => { loadInbox(); loadSent(); }, []);
+  useEffect(() => { studentService.professors().then(setProfessors).catch(() => {}); }, []);
+
+  function openMessage(m, source) {
+    setSelected(m);
+    setReadSource(source);
+    setView("read");
+    if (source === "inbox" && !m.lido) {
+      studentService.markRead(m.id).then(loadInbox).catch(() => {});
+    }
+  }
+
+  function startReply(m) {
+    setProfessorId(m.fromId);
+    setSubject(m.subject.startsWith("Re:") ? m.subject : `Re: ${m.subject}`);
+    setBody("");
+    setView("compose");
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!professorId) return;
+    setSending(true);
+    setFeedback(null);
+    try {
+      await studentService.sendEmail({ studentId: professorId, subject, body, replyToId: selected?.id ?? null });
+      setFeedback({ type: "success", message: "E-mail enviado com sucesso!" });
+      setSubject(""); setBody(""); setProfessorId(""); setSelected(null);
+      loadInbox(); loadSent();
+    } catch (err) {
+      setFeedback({ type: "error", message: err?.message || "Falha ao enviar e-mail." });
+    } finally {
+      setSending(false);
+    }
+  }
+
+  const unread = inboxMsgs.filter((m) => !m.lido).length;
+  const inboxActive = view === "inbox" || (view === "read" && readSource === "inbox");
+  const sentActive  = view === "sent"  || (view === "read" && readSource === "sent");
+
+  return (
+    <>
+      <div className="settings-page-header">
+        <h2>E-mails</h2>
+        <p>Gerencie sua caixa de mensagens com os professores.</p>
+      </div>
+
+      <div className="mail-tabs">
+        <button type="button" className={`mail-tab${inboxActive ? " is-active" : ""}`} onClick={() => setView("inbox")}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12" /><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" /></svg>
+          Recebidas
+          {unread > 0 && <span className="mail-tab-badge">{unread}</span>}
+        </button>
+        <button type="button" className={`mail-tab${sentActive ? " is-active" : ""}`} onClick={() => setView("sent")}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+          Enviadas
+        </button>
+        <button type="button" className={`mail-tab${view === "compose" ? " is-active-gold" : ""}`} onClick={() => { setView("compose"); setSelected(null); setFeedback(null); }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+          Nova Mensagem
+        </button>
+      </div>
+
+      {view === "inbox" && (
+        <div className="mail-list-card">
+          <StudentMsgList messages={inboxMsgs} onSelect={(m) => openMessage(m, "inbox")} selectedId={selected?.id} emptyText="Sua caixa de entrada está vazia." showFrom />
+        </div>
+      )}
+
+      {view === "sent" && (
+        <div className="mail-list-card">
+          <StudentMsgList messages={sentMsgs} onSelect={(m) => openMessage(m, "sent")} selectedId={selected?.id} emptyText="Nenhuma mensagem enviada ainda." showFrom={false} />
+        </div>
+      )}
+
+      {view === "read" && selected && (
+        <div className="mail-read-card">
+          <div className="mail-read-header">
+            <button type="button" className="mail-read-back" onClick={() => setView(readSource)}>← Voltar</button>
+            <h3 className="mail-read-subject">{selected.subject}</h3>
+            <p className="mail-read-meta">
+              <strong>{readSource === "inbox" ? "De:" : "Para:"}</strong>{" "}
+              {readSource === "inbox" ? selected.fromNome : selected.toNome}
+              {" · "}{new Date(selected.criadoEm).toLocaleString("pt-BR")}
+            </p>
+          </div>
+          <div className="mail-read-body">
+            <p className="mail-read-text">{selected.body}</p>
+            {readSource === "inbox" && (
+              <div className="mail-read-actions">
+                <button className="button button-primary" type="button" onClick={() => startReply(selected)}>Responder</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {view === "compose" && (
+        <div className="mail-compose-card">
+          <div className="mail-compose-header">
+            <div className="mail-compose-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+            </div>
+            <h3>{selected ? "Responder mensagem" : "Nova mensagem"}</h3>
+          </div>
+          <form onSubmit={handleSubmit} className="mail-compose-form">
+            {!selected && (
+              <div className="settings-form-field">
+                <label className="settings-label">Destinatário</label>
+                <select className="settings-input" value={professorId} onChange={(e) => setProfessorId(e.target.value)} required>
+                  <option value="">{professors.length === 0 ? "Nenhum professor disponível" : "Selecione um professor"}</option>
+                  {professors.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
+                </select>
+              </div>
+            )}
+            {selected && (
+              <div className="mail-reply-banner">
+                Respondendo a <strong>{selected.fromNome}</strong>
+              </div>
+            )}
+            <div className="settings-form-field">
+              <label className="settings-label">Assunto</label>
+              <input className="settings-input" type="text" placeholder="Assunto da mensagem" value={subject} onChange={(e) => setSubject(e.target.value)} required maxLength={120} />
+            </div>
+            <div className="settings-form-field">
+              <label className="settings-label">Mensagem</label>
+              <textarea className="settings-input" placeholder="Escreva sua mensagem..." value={body} onChange={(e) => setBody(e.target.value)} required rows={7} maxLength={2000} style={{ minHeight: "150px", resize: "vertical" }} />
+            </div>
+            {feedback && (
+              <p className={feedback.type === "success" ? "mail-feedback-ok" : "mail-feedback-err"}>{feedback.message}</p>
+            )}
+            <div className="mail-compose-actions">
+              <button className="button button-primary" type="submit" disabled={sending || professors.length === 0}>{sending ? "Enviando..." : "Enviar mensagem"}</button>
+            </div>
+          </form>
+        </div>
+      )}
+    </>
+  );
+}
+
+function StudentMsgList({ messages, onSelect, selectedId, emptyText, showFrom }) {
+  if (messages.length === 0) {
+    return (
+      <div className="mail-empty">
+        <div className="mail-empty-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+          </svg>
+        </div>
+        <p>{emptyText}</p>
+      </div>
+    );
+  }
+  return (
+    <ul className="mail-list">
+      {messages.map((m) => {
+        const displayName = showFrom ? m.fromNome : m.toNome;
+        const isUnread = showFrom && !m.lido;
+        const isSelected = selectedId === m.id;
+        return (
+          <li key={m.id} onClick={() => onSelect(m)} className={`mail-item${isUnread ? " is-unread" : ""}${isSelected ? " is-selected" : ""}`}>
+            <div className="mail-avatar">{initials(displayName)}</div>
+            <div className="mail-item-body">
+              <div className="mail-item-top">
+                <span className="mail-item-name">{displayName}</span>
+                <span className="mail-item-time">{timeAgo(m.criadoEm)}</span>
+              </div>
+              <div className="mail-item-subject">{m.subject}</div>
+            </div>
+            {isUnread && <div className="mail-unread-dot" />}
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 export default StudentPage;

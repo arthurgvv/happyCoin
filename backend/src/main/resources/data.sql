@@ -32,6 +32,10 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- Cursos dos professores (professor e aluno devem compartilhar instituicao + curso)
+DELETE FROM professor_cursos
+WHERE professor_id = '00000002-0000-0000-0000-000000000001'
+  AND curso IN ('Engenharia de Software', 'Ciencia da Computacao');
+
 INSERT INTO professor_cursos (professor_id, curso)
 VALUES
     -- Professor do acesso rápido (mantém 2 cursos pra conseguir listar alunos quando você criar manualmente)

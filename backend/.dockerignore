@@ -1,0 +1,6 @@
+# flyctl launch added from .gitignore
+**/target
+**/spring.log
+**/spring.err
+**/.m2
+fly.toml
