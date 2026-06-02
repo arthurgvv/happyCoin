@@ -27,7 +27,7 @@ public class Product {
     @Column(name = "custo_moedas")
     private int custoMoedas;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
     @Column(name = "company_id")
