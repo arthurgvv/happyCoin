@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { productService } from "../services/productService.js";
 
-export function useProducts() {
+export function useProducts(role) {
   const [products, setProducts] = useState([]);
 
   async function refresh() {
-    setProducts(await productService.list());
+    const fetcher = role === "COMPANY" ? productService.listMine() : productService.list();
+    setProducts(await fetcher);
   }
 
   useEffect(() => {

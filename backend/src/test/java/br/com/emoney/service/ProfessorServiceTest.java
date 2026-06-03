@@ -3,10 +3,12 @@ package br.com.emoney.service;
 import br.com.emoney.dto.TransferCoinsRequest;
 import br.com.emoney.model.AuthSession;
 import br.com.emoney.model.Institution;
+import br.com.emoney.model.Message;
 import br.com.emoney.model.Professor;
 import br.com.emoney.model.Student;
 import br.com.emoney.model.UserRole;
 import br.com.emoney.repository.InstitutionRepository;
+import br.com.emoney.repository.MessageRepository;
 import br.com.emoney.repository.ProfessorRepository;
 import br.com.emoney.repository.StudentRepository;
 import br.com.emoney.repository.TransferRepository;
@@ -14,12 +16,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,6 +41,9 @@ class ProfessorServiceTest {
     private TransferRepository transferRepository;
 
     @Mock
+    private MessageRepository messageRepository;
+
+    @Mock
     private InstitutionRepository institutionRepository;
 
     @Mock
@@ -45,8 +52,9 @@ class ProfessorServiceTest {
     @Test
     void rejectsTransferWhenStudentIsOutsideProfessorCourses() throws Exception {
         ValidationService validationService = new ValidationService();
-        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository);
-        ProfessorService professorService = new ProfessorService(professorRepository, studentService, transferRepository, validationService, emailService);
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordEncoder);
+        ProfessorService professorService = new ProfessorService(professorRepository, studentService, transferRepository, messageRepository, validationService, emailService, passwordEncoder);
 
         Institution institution = new Institution(
                 "PUC Minas",
@@ -91,6 +99,7 @@ class ProfessorServiceTest {
 
         assertThatThrownBy(() -> professorService.transfer(session, request))
                 .hasMessageContaining("cursos atribuidos");
+        verify(messageRepository, never()).save(any(Message.class));
         verify(emailService, never()).sendCoinTransferConfirmation(professor, student, 50, "Participacao");
         verify(emailService, never()).sendCoinReceivedNotification(professor, student, 50, "Participacao");
     }
@@ -98,8 +107,9 @@ class ProfessorServiceTest {
     @Test
     void sendsEmailsWhenTransferSucceeds() throws Exception {
         ValidationService validationService = new ValidationService();
-        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository);
-        ProfessorService professorService = new ProfessorService(professorRepository, studentService, transferRepository, validationService, emailService);
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordEncoder);
+        ProfessorService professorService = new ProfessorService(professorRepository, studentService, transferRepository, messageRepository, validationService, emailService, passwordEncoder);
 
         Institution institution = new Institution(
                 "PUC Minas",
@@ -144,6 +154,7 @@ class ProfessorServiceTest {
 
         professorService.transfer(session, request);
 
+        verify(messageRepository).save(any(Message.class));
         verify(emailService).sendCoinTransferConfirmation(professor, student, 50, "Participacao");
         verify(emailService).sendCoinReceivedNotification(professor, student, 50, "Participacao");
     }

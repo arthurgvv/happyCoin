@@ -15,6 +15,7 @@ import br.com.emoney.repository.CompanyRepository;
 import br.com.emoney.repository.InstitutionRepository;
 import br.com.emoney.repository.ProfessorRepository;
 import br.com.emoney.repository.StudentRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,6 +25,7 @@ import java.util.UUID;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Service
 public class InstitutionService {
@@ -32,13 +34,17 @@ public class InstitutionService {
     private final ValidationService validationService;
     private final StudentRepository studentRepository;
     private final CompanyRepository companyRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public InstitutionService(InstitutionRepository institutionRepository, ProfessorRepository professorRepository, StudentRepository studentRepository, CompanyRepository companyRepository, ValidationService validationService) {
+    public InstitutionService(InstitutionRepository institutionRepository, ProfessorRepository professorRepository,
+                               StudentRepository studentRepository, CompanyRepository companyRepository,
+                               ValidationService validationService, BCryptPasswordEncoder passwordEncoder) {
         this.institutionRepository = institutionRepository;
         this.professorRepository = professorRepository;
         this.studentRepository = studentRepository;
         this.companyRepository = companyRepository;
         this.validationService = validationService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Institution create(RegisterInstitutionRequest request) {
@@ -53,10 +59,11 @@ public class InstitutionService {
             throw new ResponseStatusException(CONFLICT, "Ja existe instituicao com este identificador.");
         }
 
+        String rawPassword = validationService.senha(request.getSenha());
         Institution institution = new Institution(
                 validationService.text(request.getNome(), "Nome da instituicao"),
                 email,
-                validationService.senha(request.getSenha()),
+                passwordEncoder.encode(rawPassword),
                 validationService.text(request.getTelefone(), "Telefone"),
                 validationService.text(request.getEndereco(), "Endereco"),
                 identificador
@@ -78,11 +85,12 @@ public class InstitutionService {
             throw new ResponseStatusException(CONFLICT, "Ja existe professor com este CPF.");
         }
 
+        String rawPassword = validationService.senha(request.getSenha());
         Professor professor = new Professor(
                 validationService.text(request.getNome(), "Nome"),
                 cpf,
                 email,
-                validationService.senha(request.getSenha()),
+                passwordEncoder.encode(rawPassword),
                 institution.getId(),
                 validationService.cursos(request.getCursos()),
                 withInitialSemesterCredit ? 1000 : 0
@@ -118,10 +126,10 @@ public class InstitutionService {
 
     public Institution authenticate(String email, String senha) {
         Institution institution = institutionRepository.findByEmail(validationService.text(email, "Email").toLowerCase())
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Email ou senha invalidos."));
+                .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Email ou senha invalidos."));
 
-        if (!institution.getSenha().equals(senha)) {
-            throw new ResponseStatusException(NOT_FOUND, "Email ou senha invalidos.");
+        if (!passwordEncoder.matches(senha, institution.getSenha())) {
+            throw new ResponseStatusException(UNAUTHORIZED, "Email ou senha invalidos.");
         }
 
         return institution;
@@ -154,7 +162,7 @@ public class InstitutionService {
             institution.setEmail(email);
         }
         if (request.getSenha() != null && !request.getSenha().isBlank()) {
-            institution.setSenha(validationService.senha(request.getSenha()));
+            institution.setSenha(passwordEncoder.encode(validationService.senha(request.getSenha())));
         }
         if (request.getTelefone() != null && !request.getTelefone().isBlank()) {
             institution.setTelefone(validationService.text(request.getTelefone(), "Telefone"));
@@ -192,7 +200,7 @@ public class InstitutionService {
             professor.setEmail(email);
         }
         if (request.getSenha() != null && !request.getSenha().isBlank()) {
-            professor.setSenha(validationService.senha(request.getSenha()));
+            professor.setSenha(passwordEncoder.encode(validationService.senha(request.getSenha())));
         }
         if (request.getCursos() != null && !request.getCursos().isEmpty()) {
             professor.setCursos(validationService.cursos(request.getCursos()));

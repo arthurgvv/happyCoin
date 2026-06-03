@@ -179,7 +179,11 @@ public class StudentController {
             throw new ResponseStatusException(FORBIDDEN, "Apenas alunos podem acessar esta area.");
         }
         return messageRepository.findByFromIdOrderByCriadoEmDesc(session.getUserId())
-                .stream().map(MessageResponse::new).toList();
+                .stream()
+                .filter(message -> message.getType() == null || !message.getType().startsWith("PURCHASE_"))
+                .filter(message -> message.getSubject() == null || !message.getSubject().startsWith("Novo resgate: "))
+                .map(MessageResponse::new)
+                .toList();
     }
 
     @GetMapping("/me/inbox")

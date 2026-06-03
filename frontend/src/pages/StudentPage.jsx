@@ -39,11 +39,13 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
   const [loadingTransfers, setLoadingTransfers] = useState(false);
   const [loadingPurchases, setLoadingPurchases] = useState(false);
   const [qrPurchase, setQrPurchase] = useState(null);
+  const [unreadEmails, setUnreadEmails] = useState(0);
 
   useEffect(() => {
     studentService.me()
       .then(onUpdateUser)
       .catch(() => {});
+    studentService.inbox().then((msgs) => setUnreadEmails(msgs.filter((m) => !m.lido).length)).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -90,6 +92,21 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
       onToast({ message: error.message, type: "error" });
     } finally {
       setPurchasingId(null);
+    }
+  }
+
+  async function handleShowPurchaseQr(purchaseId) {
+    if (!purchaseId) return;
+    let availablePurchases = purchases;
+    if (availablePurchases.length === 0) {
+      availablePurchases = await studentService.purchases();
+      setPurchases(availablePurchases);
+    }
+    const purchase = availablePurchases.find((item) => item.id === purchaseId);
+    if (purchase) {
+      setQrPurchase(purchase);
+    } else {
+      onToast({ message: "Cupom nao encontrado em suas compras.", type: "error" });
     }
   }
 
@@ -155,7 +172,7 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
           { key: "products", label: "Produtos" },
           { key: "purchases", label: "Minhas Compras" },
           { key: "historico", label: "Histórico" },
-          { key: "emails", label: "E-mails" },
+          { key: "emails", label: "E-mails", badge: unreadEmails },
           { key: "account", label: "Configurações" },
         ]}
       />
@@ -235,7 +252,7 @@ function StudentPage({ user, onLogout, onUpdateUser, onToast }) {
           )}
 
           {activePage === "emails" && (
-            <StudentEmailSection />
+            <StudentEmailSection onUnreadChange={setUnreadEmails} onShowPurchaseQr={handleShowPurchaseQr} />
           )}
 
           {activePage === "account" && (
@@ -412,7 +429,7 @@ function timeAgo(dateString) {
   return `${days}d atrás`;
 }
 
-function StudentEmailSection() {
+function StudentEmailSection({ onUnreadChange, onShowPurchaseQr }) {
   const [view, setView] = useState("inbox"); // "inbox" | "sent" | "compose" | "read"
   const [inboxMsgs, setInboxMsgs] = useState([]);
   const [sentMsgs, setSentMsgs] = useState([]);
@@ -426,7 +443,10 @@ function StudentEmailSection() {
   const [feedback, setFeedback] = useState(null);
 
   function loadInbox() {
-    studentService.inbox().then(setInboxMsgs).catch(() => {});
+    studentService.inbox().then((msgs) => {
+      setInboxMsgs(msgs);
+      onUnreadChange?.(msgs.filter((m) => !m.lido).length);
+    }).catch(() => {});
   }
   function loadSent() {
     studentService.sent().then(setSentMsgs).catch(() => {});
@@ -520,7 +540,14 @@ function StudentEmailSection() {
           </div>
           <div className="mail-read-body">
             <p className="mail-read-text">{selected.body}</p>
-            {readSource === "inbox" && (
+            {selected.type === "PURCHASE_COUPON" && selected.purchaseId && (
+              <div className="mail-read-actions">
+                <button className="button button-primary" type="button" onClick={() => onShowPurchaseQr(selected.purchaseId)}>
+                  Ver QR
+                </button>
+              </div>
+            )}
+            {readSource === "inbox" && selected.fromRole === "PROFESSOR" && (
               <div className="mail-read-actions">
                 <button className="button button-primary" type="button" onClick={() => startReply(selected)}>Responder</button>
               </div>

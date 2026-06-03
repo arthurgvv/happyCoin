@@ -30,13 +30,15 @@ function ProductGrid({
 
       <div className="product-grid">
         {products.map((product) => {
-          const canPurchase = Number(walletBalance || 0) >= product.custoMoedas;
+          const isOutOfStock = product.quantidade != null && product.quantidade === 0;
+          const canPurchase = !isOutOfStock && Number(walletBalance || 0) >= product.custoMoedas;
           const isPurchasing = purchasingId === product.id;
 
           return (
             <article className="product-card" key={product.id}>
               <div className="product-image-wrap">
                 {product.imageUrl && <img src={product.imageUrl} alt={product.nome} />}
+                {isOutOfStock && <span className="product-out-of-stock-badge">Esgotado</span>}
               </div>
               <div className="product-body">
                 {product.empresaParceira && <span className="product-brand-chip">{product.empresaParceira}</span>}
@@ -53,10 +55,10 @@ function ProductGrid({
                     className="button-buy"
                     type="button"
                     disabled={!canPurchase || isPurchasing}
-                    title={canPurchase ? `Resgatar ${product.nome}` : "Saldo insuficiente"}
+                    title={isOutOfStock ? "Produto esgotado" : canPurchase ? `Resgatar ${product.nome}` : "Saldo insuficiente"}
                     onClick={() => onPurchase(product)}
                   >
-                    {isPurchasing ? "Resgatando..." : canPurchase ? "Comprar" : "Saldo insuficiente"}
+                    {isPurchasing ? "Resgatando..." : isOutOfStock ? "Esgotado" : canPurchase ? "Comprar" : "Saldo insuficiente"}
                   </button>
                 )}
                 {(onEdit || onDelete) && (

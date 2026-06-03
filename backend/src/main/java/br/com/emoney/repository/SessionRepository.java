@@ -6,20 +6,22 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
 public class SessionRepository {
-    private final ConcurrentHashMap<String, AuthSession> sessions = new ConcurrentHashMap<>();
+
+    private final AuthSessionJpaRepository jpaRepository;
+
+    public SessionRepository(AuthSessionJpaRepository jpaRepository) {
+        this.jpaRepository = jpaRepository;
+    }
 
     public AuthSession create(UUID userId, UserRole role) {
         String token = UUID.randomUUID().toString();
-        AuthSession session = new AuthSession(token, userId, role);
-        sessions.put(token, session);
-        return session;
+        return jpaRepository.save(new AuthSession(token, userId, role));
     }
 
     public Optional<AuthSession> findByToken(String token) {
-        return Optional.ofNullable(sessions.get(token));
+        return jpaRepository.findById(token);
     }
 }

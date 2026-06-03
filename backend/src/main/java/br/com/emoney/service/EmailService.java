@@ -12,9 +12,14 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+
 @Service
 public class EmailService {
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private final JavaMailSender mailSender;
     private final String from;
@@ -48,8 +53,22 @@ public class EmailService {
         );
     }
 
+    public void sendCouponEmailToStudent(String to, String studentName, String productName,
+                                         UUID purchaseId, int custoMoedas, LocalDateTime dataResgate) {
+        send(to, "Seu cupom de resgate - HappyCoin",
+                couponToStudentTemplate(studentName, productName, purchaseId, custoMoedas, dataResgate));
+    }
+
+    public void sendPurchaseNotificationToCompany(String to, String companyName, String studentName,
+                                                   String productName, UUID purchaseId, int custoMoedas,
+                                                   LocalDateTime dataResgate) {
+        send(to, "Novo resgate realizado - HappyCoin",
+                purchaseNotificationToCompanyTemplate(companyName, studentName, productName, purchaseId, custoMoedas, dataResgate));
+    }
+
     private void send(String to, String subject, String htmlBody) {
         try {
+            log.info("Tentando enviar email para {} | assunto: {}", to, subject);
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
             helper.setFrom(from);
@@ -57,10 +76,142 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(htmlBody, true);
             mailSender.send(message);
-            log.info("Email enviado para {}", to);
+            log.info("Email enviado com sucesso para {}", to);
         } catch (MailException | MessagingException ex) {
-            log.warn("Falha ao enviar email para {}: {}", to, ex.getMessage());
+            log.warn("Falha ao enviar email para {} | {}: {}", to, ex.getClass().getSimpleName(), ex.getMessage());
+        } catch (Exception ex) {
+            log.error("Erro inesperado ao enviar email para {} | {}: {}", to, ex.getClass().getSimpleName(), ex.getMessage(), ex);
         }
+    }
+
+    private String couponToStudentTemplate(String studentName, String productName,
+                                            UUID purchaseId, int custoMoedas, LocalDateTime dataResgate) {
+        String couponCode = purchaseId.toString().toUpperCase().replace("-", "");
+        String data = dataResgate != null ? dataResgate.format(DATE_FMT) : "-";
+        return """
+                <!doctype html>
+                <html lang="pt-BR">
+                <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Seu cupom de resgate</title>
+                </head>
+                <body style="margin:0;padding:0;background:#fff8f2;font-family:Arial,Helvetica,sans-serif;color:#201b11;">
+                  <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="background:#fff8f2;padding:32px 12px;">
+                    <tr>
+                      <td align="center">
+                        <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="max-width:580px;">
+                          <tr>
+                            <td style="background:#201b11;border-radius:12px 12px 0 0;padding:20px 28px;text-align:center;">
+                              <div style="font-size:22px;font-weight:900;color:#f4b91f;letter-spacing:.5px;">HappyCoin</div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="background:#f4b91f;padding:18px 28px;">
+                              <h1 style="margin:0;font-size:20px;font-weight:900;color:#201b11;">Resgate confirmado!</h1>
+                              <p style="margin:4px 0 0;font-size:13px;color:#4a3c0a;">Ola, %s. Seu cupom esta pronto para uso.</p>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="background:#ffffff;padding:28px;">
+                              <p style="margin:0 0 8px;font-size:13px;color:#8a6e3a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Vantagem resgatada</p>
+                              <p style="margin:0 0 20px;font-size:18px;font-weight:800;color:#201b11;">%s</p>
+                              <p style="margin:0 0 8px;font-size:13px;color:#8a6e3a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Moedas utilizadas</p>
+                              <p style="margin:0 0 20px;font-size:16px;font-weight:700;color:#201b11;">%d moedas</p>
+                              <p style="margin:0 0 8px;font-size:13px;color:#8a6e3a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Data do resgate</p>
+                              <p style="margin:0 0 24px;font-size:15px;color:#201b11;">%s</p>
+                              <div style="background:#201b11;border-radius:10px;padding:20px 24px;text-align:center;">
+                                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#f4b91f;margin-bottom:8px;">Codigo do cupom</div>
+                                <div style="font-size:18px;font-weight:900;color:#f4b91f;letter-spacing:2px;word-break:break-all;">%s</div>
+                              </div>
+                              <p style="margin:20px 0 0;font-size:13px;color:#6b5528;line-height:1.6;">Apresente este codigo na empresa parceira para utilizar sua vantagem.</p>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="background:#f5ebe0;border-radius:0 0 12px 12px;padding:16px 28px;text-align:center;">
+                              <p style="margin:0;font-size:12px;color:#8a7050;line-height:1.5;">Este e-mail foi enviado automaticamente pelo sistema HappyCoin.<br>Por favor, nao responda esta mensagem.</p>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </body>
+                </html>
+                """.formatted(
+                escapeHtml(studentName),
+                escapeHtml(productName),
+                custoMoedas,
+                escapeHtml(data),
+                escapeHtml(couponCode)
+        );
+    }
+
+    private String purchaseNotificationToCompanyTemplate(String companyName, String studentName,
+                                                          String productName, UUID purchaseId,
+                                                          int custoMoedas, LocalDateTime dataResgate) {
+        String couponCode = purchaseId.toString().toUpperCase().replace("-", "");
+        String data = dataResgate != null ? dataResgate.format(DATE_FMT) : "-";
+        return """
+                <!doctype html>
+                <html lang="pt-BR">
+                <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Novo resgate realizado</title>
+                </head>
+                <body style="margin:0;padding:0;background:#fff8f2;font-family:Arial,Helvetica,sans-serif;color:#201b11;">
+                  <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="background:#fff8f2;padding:32px 12px;">
+                    <tr>
+                      <td align="center">
+                        <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="max-width:580px;">
+                          <tr>
+                            <td style="background:#201b11;border-radius:12px 12px 0 0;padding:20px 28px;text-align:center;">
+                              <div style="font-size:22px;font-weight:900;color:#f4b91f;letter-spacing:.5px;">HappyCoin</div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="background:#f4b91f;padding:18px 28px;">
+                              <h1 style="margin:0;font-size:20px;font-weight:900;color:#201b11;">Novo resgate realizado</h1>
+                              <p style="margin:4px 0 0;font-size:13px;color:#4a3c0a;">%s recebeu uma notificacao de resgate.</p>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="background:#ffffff;padding:28px;">
+                              <p style="margin:0 0 8px;font-size:13px;color:#8a6e3a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Aluno</p>
+                              <p style="margin:0 0 20px;font-size:16px;font-weight:800;color:#201b11;">%s</p>
+                              <p style="margin:0 0 8px;font-size:13px;color:#8a6e3a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Vantagem resgatada</p>
+                              <p style="margin:0 0 20px;font-size:16px;font-weight:800;color:#201b11;">%s</p>
+                              <p style="margin:0 0 8px;font-size:13px;color:#8a6e3a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Moedas utilizadas</p>
+                              <p style="margin:0 0 20px;font-size:15px;color:#201b11;">%d moedas</p>
+                              <p style="margin:0 0 8px;font-size:13px;color:#8a6e3a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Data do resgate</p>
+                              <p style="margin:0 0 24px;font-size:15px;color:#201b11;">%s</p>
+                              <div style="background:#201b11;border-radius:10px;padding:20px 24px;text-align:center;">
+                                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#f4b91f;margin-bottom:8px;">Codigo do cupom</div>
+                                <div style="font-size:18px;font-weight:900;color:#f4b91f;letter-spacing:2px;word-break:break-all;">%s</div>
+                              </div>
+                              <p style="margin:20px 0 0;font-size:13px;color:#6b5528;line-height:1.6;">Quando o aluno apresentar este codigo, confirme o resgate da vantagem.</p>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="background:#f5ebe0;border-radius:0 0 12px 12px;padding:16px 28px;text-align:center;">
+                              <p style="margin:0;font-size:12px;color:#8a7050;line-height:1.5;">Este e-mail foi enviado automaticamente pelo sistema HappyCoin.<br>Por favor, nao responda esta mensagem.</p>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </body>
+                </html>
+                """.formatted(
+                escapeHtml(companyName),
+                escapeHtml(studentName),
+                escapeHtml(productName),
+                custoMoedas,
+                escapeHtml(data),
+                escapeHtml(couponCode)
+        );
     }
 
     private String directMessageFromStudentTemplate(Student student, Professor professor, String subject, String body) {

@@ -163,7 +163,11 @@ public class ProfessorController {
             throw new ResponseStatusException(FORBIDDEN, "Apenas professores podem acessar esta area.");
         }
         return messageRepository.findByFromIdOrderByCriadoEmDesc(session.getUserId())
-                .stream().map(MessageResponse::new).toList();
+                .stream()
+                .filter(message -> message.getType() == null || !message.getType().startsWith("COIN_"))
+                .filter(message -> message.getSubject() == null || !message.getSubject().startsWith("Voce recebeu "))
+                .map(MessageResponse::new)
+                .toList();
     }
 
     @GetMapping("/me/transfers")

@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import Navbar from "../components/Navbar.jsx";
 import ProductGrid from "../components/ProductGrid.jsx";
 import { useProducts } from "../hooks/useProducts.js";
 import { companyService } from "../services/companyService.js";
 import { productService } from "../services/productService.js";
 
-const emptyProduct = { nome: "", descricao: "", fotoUrl: "", fotoNome: "", custoMoedas: "" };
+const emptyProduct = { nome: "", descricao: "", fotoUrl: "", fotoNome: "", custoMoedas: "", quantidade: "" };
 const emptyProfile = { nomeFantasia: "", email: "", senha: "", photoUrl: null };
 
 const PRODUCT_ICON = (
@@ -30,7 +30,7 @@ const COIN_ICON = (
 );
 
 function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
-  const { products, refresh } = useProducts();
+  const { products, refresh } = useProducts("COMPANY");
   const [activePage, setActivePage] = useState("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   const [form, setForm] = useState(emptyProduct);
@@ -44,12 +44,17 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
   const [savingEdit, setSavingEdit] = useState(false);
   const [showPwdChange, setShowPwdChange] = useState(false);
   const [twoFa, setTwoFa] = useState(false);
+  const [unreadEmails, setUnreadEmails] = useState(0);
 
   useEffect(() => {
     if (activePage === "dashboard" || activePage === "purchases") {
       loadPurchases();
     }
   }, [activePage]);
+
+  useEffect(() => {
+    loadUnreadEmails();
+  }, []);
 
   useEffect(() => {
     setSearchTerm("");
@@ -66,6 +71,15 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
     }
   }
 
+  async function loadUnreadEmails() {
+    try {
+      const messages = await companyService.inbox();
+      setUnreadEmails(messages.filter((message) => !message.lido).length);
+    } catch {
+      setUnreadEmails(0);
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setSubmitting(true);
@@ -75,6 +89,7 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
         descricao: form.descricao,
         fotoUrl: form.fotoUrl,
         custoMoedas: Number(form.custoMoedas),
+        quantidade: form.quantidade !== "" ? Number(form.quantidade) : null,
       });
       setForm(emptyProduct);
       await refresh();
@@ -94,7 +109,7 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      onToast({ message: "Anexe um arquivo de imagem válido.", type: "error" });
+      onToast({ message: "Anexe um arquivo de imagem valido.", type: "error" });
       return;
     }
     const dataUrl = await readFileAsDataUrl(file);
@@ -109,6 +124,7 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
       fotoUrl: product.imageUrl || "",
       fotoNome: "",
       custoMoedas: String(product.custoMoedas),
+      quantidade: product.quantidade != null ? String(product.quantidade) : "",
     });
   }
 
@@ -121,6 +137,7 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
         descricao: editForm.descricao,
         fotoUrl: editForm.fotoUrl,
         custoMoedas: Number(editForm.custoMoedas),
+        quantidade: editForm.quantidade !== "" ? Number(editForm.quantidade) : null,
       });
       setEditingProduct(null);
       await refresh();
@@ -136,7 +153,7 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      onToast({ message: "Anexe um arquivo de imagem válido.", type: "error" });
+      onToast({ message: "Anexe um arquivo de imagem valido.", type: "error" });
       return;
     }
     const dataUrl = await readFileAsDataUrl(file);
@@ -175,10 +192,9 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
     }
   }
 
-  const companyProducts = products.filter((product) => product.companyId === user.id);
   const filteredCompanyProducts = useMemo(() => {
-    return companyProducts.filter((product) => matchesSearch(searchTerm, [product.nome, product.descricao, product.custoMoedas]));
-  }, [companyProducts, searchTerm]);
+    return products.filter((product) => matchesSearch(searchTerm, [product.nome, product.descricao, product.custoMoedas]));
+  }, [products, searchTerm]);
   const filteredPurchases = useMemo(() => {
     return purchases.filter((purchase) => matchesSearch(searchTerm, [purchase.productName, purchase.studentName, purchase.studentEmail, purchase.custoMoedas]));
   }, [purchases, searchTerm]);
@@ -188,7 +204,8 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
     activePage === "dashboard" ? "Painel da Empresa"
       : activePage === "products" ? "Meus Produtos"
       : activePage === "purchases" ? "Resgates"
-      : "Configurações";
+      : activePage === "emails" ? "E-mails"
+      : "Configuracoes";
 
   return (
     <div className="app-shell company-shell">
@@ -203,7 +220,8 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
           { key: "dashboard", label: "Painel" },
           { key: "products", label: "Meus Produtos" },
           { key: "purchases", label: "Resgates" },
-          { key: "profile", label: "Configurações" },
+          { key: "emails", label: "E-mails", badge: unreadEmails },
+          { key: "profile", label: "Configuracoes" },
         ]}
       />
 
@@ -232,7 +250,7 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
           {activePage === "dashboard" && (
             <CompanyDashboard
               user={user}
-              products={companyProducts}
+              products={products}
               purchases={purchases}
               totalResgatado={totalResgatado}
               loadingPurchases={loadingPurchases}
@@ -260,6 +278,10 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
               loading={loadingPurchases}
               totalResgatado={totalResgatado}
             />
+          )}
+
+          {activePage === "emails" && (
+            <CompanyEmailSection onUnreadChange={setUnreadEmails} />
           )}
 
           {activePage === "profile" && (
@@ -365,7 +387,7 @@ function CompanyDashboard({ user, products, purchases, totalResgatado, loadingPu
         </section>
 
         <aside className="prof-quick-actions">
-          <h3 className="quick-actions-title">Ações Rápidas</h3>
+          <h3 className="quick-actions-title">Acoes Rapidas</h3>
           <button className="quick-action-card is-primary" type="button" onClick={onNewProduct}>
             <div className="quick-action-icon">{PRODUCT_ICON}</div>
             <div className="quick-action-body">
@@ -401,7 +423,7 @@ function ProductsManager({ form, update, submitting, handleSubmit, handleImageCh
     <>
       <div className="settings-page-header">
         <h2>Meus Produtos</h2>
-        <p>Cadastre e mantenha as recompensas disponíveis para os alunos.</p>
+        <p>Cadastre e mantenha as recompensas disponiveis para os alunos.</p>
       </div>
 
       <section className="professor-panel">
@@ -421,18 +443,22 @@ function ProductsManager({ form, update, submitting, handleSubmit, handleImageCh
             Custo em moedas
             <input type="number" min="1" value={form.custoMoedas} onChange={(event) => update("custoMoedas", event.target.value)} required />
           </label>
+          <label>
+            Estoque (deixe vazio para ilimitado)
+            <input type="number" min="0" value={form.quantidade} onChange={(event) => update("quantidade", event.target.value)} placeholder="Ilimitado" />
+          </label>
           <label className="full-field">
             Foto do produto
             <input type="file" accept="image/*" onChange={handleImageChange} />
           </label>
           {form.fotoUrl && (
             <div className="image-preview full-field">
-              <img src={form.fotoUrl} alt="Prévia do produto" />
+              <img src={form.fotoUrl} alt="Previa do produto" />
               <span>{form.fotoNome || "Imagem anexada"}</span>
             </div>
           )}
           <label className="full-field">
-            Descrição
+            Descricao
             <textarea value={form.descricao} onChange={(event) => update("descricao", event.target.value)} required />
           </label>
           <div className="form-actions">
@@ -448,7 +474,7 @@ function ProductsManager({ form, update, submitting, handleSubmit, handleImageCh
         onDelete={onDelete}
         onEdit={onEdit}
         title="Produtos cadastrados"
-        subtitle="Ofertas vinculadas à sua empresa parceira."
+        subtitle="Ofertas vinculadas a sua empresa parceira."
         showFilter={false}
       />
     </>
@@ -517,6 +543,107 @@ function PurchasesTable({ purchases, loading, totalResgatado }) {
   );
 }
 
+function CompanyEmailSection({ onUnreadChange }) {
+  const [messages, setMessages] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const view = selected ? "read" : "inbox";
+
+  function loadMessages() {
+    setLoading(true);
+    companyService.inbox()
+      .then((data) => {
+        setMessages(data);
+        onUnreadChange(data.filter((message) => !message.lido).length);
+      })
+      .catch(() => setMessages([]))
+      .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadMessages();
+  }, []);
+
+  function openMessage(message) {
+    setSelected(message);
+    if (!message.lido) {
+      companyService.markRead(message.id).then(loadMessages).catch(() => {});
+    }
+  }
+
+  return (
+    <>
+      <div className="settings-page-header">
+        <h2>E-mails</h2>
+        <p>Gerencie notificacoes de resgates e cupons apresentados pelos alunos.</p>
+      </div>
+
+      <div className="mail-tabs">
+        <button type="button" className={`mail-tab${view === "inbox" ? " is-active" : ""}`} onClick={() => setSelected(null)}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12" /><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" /></svg>
+          Recebidas
+          {messages.filter((message) => !message.lido).length > 0 && (
+            <span className="mail-tab-badge">{messages.filter((message) => !message.lido).length}</span>
+          )}
+        </button>
+      </div>
+
+      {view === "inbox" && (
+        <div className="mail-list-card">
+          {loading && <div className="mail-empty"><p>Carregando mensagens...</p></div>}
+          {!loading && messages.length === 0 && (
+            <div className="mail-empty">
+              <div className="mail-empty-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                </svg>
+              </div>
+              <p>Sua caixa de entrada esta vazia.</p>
+            </div>
+          )}
+          {!loading && messages.length > 0 && (
+            <ul className="mail-list">
+              {messages.map((message) => (
+                <li
+                  key={message.id}
+                  onClick={() => openMessage(message)}
+                  className={`mail-item${!message.lido ? " is-unread" : ""}${selected?.id === message.id ? " is-selected" : ""}`}
+                >
+                  <div className="mail-avatar">{initials(message.fromNome)}</div>
+                  <div className="mail-item-body">
+                    <div className="mail-item-top">
+                      <span className="mail-item-name">{message.fromNome}</span>
+                      <span className="mail-item-time">{timeAgo(message.criadoEm)}</span>
+                    </div>
+                    <div className="mail-item-subject">{message.subject}</div>
+                  </div>
+                  {!message.lido && <div className="mail-unread-dot" />}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {selected && (
+        <div className="mail-read-card">
+          <div className="mail-read-header">
+            <button type="button" className="mail-read-back" onClick={() => setSelected(null)}>Voltar</button>
+            <h3 className="mail-read-subject">{selected.subject}</h3>
+            <p className="mail-read-meta">
+              <strong>De:</strong> {selected.fromNome} {" · "}
+              {new Date(selected.criadoEm).toLocaleString("pt-BR")}
+            </p>
+          </div>
+          <div className="mail-read-body">
+            <p className="mail-read-text">{selected.body}</p>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 function CompanyProfile({ user, profileForm, setProfileForm, savingProfile, onSubmit, showPwdChange, setShowPwdChange, twoFa, setTwoFa }) {
   const currentPhoto = profileForm.photoUrl || user.photoUrl;
 
@@ -527,7 +654,7 @@ function CompanyProfile({ user, profileForm, setProfileForm, savingProfile, onSu
   return (
     <>
       <div className="settings-page-header">
-        <h2>Configurações de Perfil da Empresa</h2>
+        <h2>Configuracoes de Perfil da Empresa</h2>
         <p>Gerencie identidade, acesso e dados da empresa parceira.</p>
       </div>
 
@@ -581,7 +708,7 @@ function CompanyProfile({ user, profileForm, setProfileForm, savingProfile, onSu
         <div className="settings-right">
           <div className="settings-section-card">
             <div className="settings-section-header">
-              <h2>Informações da Empresa</h2>
+              <h2>Informacoes da Empresa</h2>
               <span className="settings-section-meta">Dados atuais</span>
             </div>
             <div className="settings-divider" />
@@ -592,27 +719,27 @@ function CompanyProfile({ user, profileForm, setProfileForm, savingProfile, onSu
                   <input className="settings-input" value={profileForm.nomeFantasia} placeholder={user.nomeFantasia} onChange={(event) => update("nomeFantasia", event.target.value)} />
                 </div>
                 <div className="settings-form-field">
-                  <label className="settings-label">Endereço de Email</label>
+                  <label className="settings-label">Endereco de Email</label>
                   <input className="settings-input" type="email" value={profileForm.email} placeholder={user.email} onChange={(event) => update("email", event.target.value)} />
                 </div>
               </div>
               <div className="settings-form-field">
                 <label className="settings-label">CNPJ</label>
                 <input className="settings-input" value={user.cnpj} disabled />
-                <span className="settings-field-hint">O CNPJ é definido no cadastro e não é alterado pelo perfil.</span>
+                <span className="settings-field-hint">O CNPJ e definido no cadastro e nao e alterado pelo perfil.</span>
               </div>
               <div className="settings-divider" />
               <div className="settings-form-actions">
                 <button className="button button-secondary" type="button" onClick={() => setProfileForm(emptyProfile)}>Descartar</button>
                 <button className="button settings-save-btn" type="submit" disabled={savingProfile}>
-                  {savingProfile ? "Salvando..." : "Salvar Alterações"}
+                  {savingProfile ? "Salvando..." : "Salvar Alteracoes"}
                 </button>
               </div>
             </form>
           </div>
 
           <div className="settings-section-card">
-            <h2>Segurança e Senha</h2>
+            <h2>Seguranca e Senha</h2>
             <p className="settings-security-desc">Atualize a senha para manter produtos e resgates protegidos.</p>
             <button className="button button-secondary settings-pwd-btn" type="button" onClick={() => setShowPwdChange((value) => !value)}>
               Alterar Senha
@@ -625,7 +752,7 @@ function CompanyProfile({ user, profileForm, setProfileForm, savingProfile, onSu
                     className="settings-input"
                     type="password"
                     value={profileForm.senha}
-                    placeholder="Letras e números"
+                    placeholder="Letras e numeros"
                     onChange={(event) => update("senha", event.target.value)}
                   />
                 </div>
@@ -641,11 +768,11 @@ function CompanyProfile({ user, profileForm, setProfileForm, savingProfile, onSu
               <div className="settings-2fa-info">
                 <div className="settings-2fa-title-row">
                   <ShieldIcon />
-                  <strong>Autenticação de Dois Fatores</strong>
+                  <strong>Autenticacao de Dois Fatores</strong>
                 </div>
-                <p>Adicione uma camada extra de segurança à conta da empresa.</p>
+                <p>Adicione uma camada extra de seguranca a conta da empresa.</p>
               </div>
-              <button className={`settings-toggle${twoFa ? " is-on" : ""}`} type="button" onClick={() => setTwoFa((value) => !value)} aria-label="Ativar autenticação de dois fatores" />
+              <button className={`settings-toggle${twoFa ? " is-on" : ""}`} type="button" onClick={() => setTwoFa((value) => !value)} aria-label="Ativar autenticacao de dois fatores" />
             </div>
           </div>
         </div>
@@ -675,23 +802,27 @@ function ProductEditModal({ editingProduct, editForm, setEditForm, savingEdit, o
             Custo em moedas
             <input type="number" min="1" value={editForm.custoMoedas} onChange={(event) => setEditForm((current) => ({ ...current, custoMoedas: event.target.value }))} required />
           </label>
+          <label>
+            Estoque (deixe vazio para ilimitado)
+            <input type="number" min="0" value={editForm.quantidade} onChange={(event) => setEditForm((current) => ({ ...current, quantidade: event.target.value }))} placeholder="Ilimitado" />
+          </label>
           <label className="full-field">
             Nova foto (opcional)
             <input type="file" accept="image/*" onChange={onImageChange} />
           </label>
           {editForm.fotoUrl && editForm.fotoNome && (
             <div className="image-preview full-field">
-              <img src={editForm.fotoUrl} alt="Prévia" />
+              <img src={editForm.fotoUrl} alt="Previa" />
               <span>{editForm.fotoNome}</span>
             </div>
           )}
           <label className="full-field">
-            Descrição
+            Descricao
             <textarea value={editForm.descricao} onChange={(event) => setEditForm((current) => ({ ...current, descricao: event.target.value }))} required />
           </label>
           <div className="form-actions">
             <button className="button button-primary" type="submit" disabled={savingEdit}>
-              {savingEdit ? "Salvando..." : "Salvar alterações"}
+              {savingEdit ? "Salvando..." : "Salvar alteracoes"}
             </button>
           </div>
         </form>
@@ -740,3 +871,4 @@ function ShieldIcon() {
 }
 
 export default CompanyPage;
+

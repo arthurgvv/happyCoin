@@ -40,6 +40,15 @@ public class ProductController {
         return productService.list();
     }
 
+    @GetMapping("/mine")
+    public List<Product> mine(@RequestHeader("Authorization") String authorization) {
+        AuthSession session = authService.requireSession(authorization);
+        if (session.getRole() != UserRole.COMPANY) {
+            throw new ResponseStatusException(FORBIDDEN, "Apenas empresas podem acessar esta area.");
+        }
+        return productService.listByCompany(session.getUserId());
+    }
+
     @PostMapping
     public Product create(@RequestHeader("Authorization") String authorization, @RequestBody ProductRequest request) {
         AuthSession session = authService.requireSession(authorization);

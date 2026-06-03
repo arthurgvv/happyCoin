@@ -103,7 +103,13 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showPwdChange, setShowPwdChange] = useState(false);
+  const [unreadEmails, setUnreadEmails] = useState(0);
   const coursesLoadedRef = useRef(false);
+
+  // Load unread email count on mount
+  useEffect(() => {
+    professorService.inbox().then((msgs) => setUnreadEmails(msgs.filter((m) => !m.lido).length)).catch(() => {});
+  }, []);
 
   // Load courses once
   useEffect(() => {
@@ -305,7 +311,7 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
           { key: "dashboard", label: "Painel" },
           { key: "wallet", label: "Carteira" },
           { key: "students", label: "Alunos" },
-          { key: "emails", label: "E-mails" },
+          { key: "emails", label: "E-mails", badge: unreadEmails },
           { key: "settings", label: "Configurações" },
         ]}
       />
@@ -727,7 +733,7 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
 
                     {/* ── EMAIL ── */}
           {activePage === "emails" && (
-            <EmailComposeSection professor={user} />
+            <EmailComposeSection professor={user} onUnreadChange={setUnreadEmails} />
           )}
 
           {/* ── SETTINGS ── */}
@@ -929,7 +935,7 @@ function ProfessorPage({ user, onLogout, onUpdateUser, onToast }) {
   );
 }
 
-function EmailComposeSection({ professor }) {
+function EmailComposeSection({ professor, onUnreadChange }) {
   const [view, setView] = useState("inbox"); // "inbox" | "sent" | "compose" | "read"
   const [inbox, setInbox] = useState([]);
   const [sent, setSent] = useState([]);
@@ -945,7 +951,10 @@ function EmailComposeSection({ professor }) {
   const [feedback, setFeedback] = useState(null);
 
   function loadInbox() {
-    professorService.inbox().then(setInbox).catch(() => {});
+    professorService.inbox().then((msgs) => {
+      setInbox(msgs);
+      onUnreadChange?.(msgs.filter((m) => !m.lido).length);
+    }).catch(() => {});
   }
   function loadSent() {
     professorService.sent().then(setSent).catch(() => {});

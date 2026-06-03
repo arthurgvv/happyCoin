@@ -7,6 +7,7 @@ import br.com.emoney.model.Institution;
 import br.com.emoney.model.Student;
 import br.com.emoney.repository.InstitutionRepository;
 import br.com.emoney.repository.StudentRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -15,17 +16,21 @@ import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Service
 public class StudentService {
     private final StudentRepository studentRepository;
     private final ValidationService validationService;
     private final InstitutionRepository institutionRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public StudentService(StudentRepository studentRepository, ValidationService validationService, InstitutionRepository institutionRepository) {
+    public StudentService(StudentRepository studentRepository, ValidationService validationService,
+                          InstitutionRepository institutionRepository, BCryptPasswordEncoder passwordEncoder) {
         this.studentRepository = studentRepository;
         this.validationService = validationService;
         this.institutionRepository = institutionRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<StudentResponse> list() {
@@ -54,6 +59,7 @@ public class StudentService {
             throw new ResponseStatusException(CONFLICT, "Ja existe aluno com este CPF.");
         }
 
+        String rawPassword = validationService.senha(request.getSenha());
         Student student = new Student(
                 validationService.text(request.getNome(), "Nome"),
                 email,
@@ -62,7 +68,7 @@ public class StudentService {
                 validationService.text(request.getEndereco(), "Endereco"),
                 resolveInstitutionName(request.getInstituicao()),
                 validationService.curso(request.getCurso()),
-                validationService.senha(request.getSenha())
+                passwordEncoder.encode(rawPassword)
         );
         student.setInstitutionId(resolveInstitutionId(request.getInstituicao()));
 
@@ -71,10 +77,10 @@ public class StudentService {
 
     public Student authenticate(String email, String senha) {
         Student student = studentRepository.findByEmail(validationService.text(email, "Email").toLowerCase())
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Email ou senha invalidos."));
+                .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Email ou senha invalidos."));
 
-        if (!student.getSenha().equals(senha)) {
-            throw new ResponseStatusException(NOT_FOUND, "Email ou senha invalidos.");
+        if (!passwordEncoder.matches(senha, student.getSenha())) {
+            throw new ResponseStatusException(UNAUTHORIZED, "Email ou senha invalidos.");
         }
 
         return student;
@@ -92,7 +98,7 @@ public class StudentService {
         student.setCurso(validationService.curso(request.getCurso()));
 
         if (request.getSenha() != null && !request.getSenha().isBlank()) {
-            student.setSenha(validationService.senha(request.getSenha()));
+            student.setSenha(passwordEncoder.encode(validationService.senha(request.getSenha())));
         }
         if (request.getPhotoUrl() != null) {
             student.setPhotoUrl(request.getPhotoUrl());

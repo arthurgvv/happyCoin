@@ -151,11 +151,24 @@ h1, h2, h3, p { margin-top: 0; }
   flex-shrink: 0;
 }
 
+.nav-tab-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 /* Professor sidebar: label left, icon right */
 .navbar-professor .nav-actions button {
   justify-content: space-between;
 }
-.navbar-professor .nav-actions button svg {
+.navbar-professor .nav-actions button .nav-tab-icon {
+  order: 2;
+}
+.navbar-professor .nav-actions button .nav-tab-badge {
   order: 2;
 }
 
@@ -1087,6 +1100,21 @@ tbody tr:last-child td { border-bottom: 0; }
   background: var(--surface-soft);
   cursor: not-allowed;
   opacity: 1;
+}
+
+.product-out-of-stock-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #cc2200;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  z-index: 2;
 }
 
 .product-footer .row-actions {
@@ -3872,6 +3900,26 @@ textarea.settings-input {
   background: var(--primary);
   color: var(--ink);
   box-shadow: 0 4px 14px rgba(244,185,31,.35);
+}
+
+.nav-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: -8px;
+  right: -9px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: #c62828;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  pointer-events: none;
 }
 
 .mail-tab-badge {

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +39,8 @@ class InstitutionServiceTest {
     @Test
     void registersInstitutionWithoutCreatingProfessorsFromRequest() {
         ValidationService validationService = new ValidationService();
-        InstitutionService institutionService = new InstitutionService(institutionRepository, professorRepository, studentRepository, companyRepository, validationService);
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        InstitutionService institutionService = new InstitutionService(institutionRepository, professorRepository, studentRepository, companyRepository, validationService, passwordEncoder);
 
         when(institutionRepository.findByEmail(anyString())).thenReturn(Optional.empty());
         when(institutionRepository.existsByIdentificadorInstitucional(anyString())).thenReturn(false);
@@ -50,7 +52,7 @@ class InstitutionServiceTest {
         request.setSenha("senha123");
         request.setTelefone("3133334444");
         request.setEndereco("Av. Dom Jose Gaspar");
-        request.setIdentificadorInstitucional("12345678000199");
+        request.setIdentificadorInstitucional("12345678000195");
 
         Institution institution = institutionService.create(request);
 

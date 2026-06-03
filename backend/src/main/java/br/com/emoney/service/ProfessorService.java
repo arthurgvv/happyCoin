@@ -5,11 +5,14 @@ import br.com.emoney.dto.TransferCoinsRequest;
 import br.com.emoney.dto.UpdateProfessorRequest;
 import br.com.emoney.model.AuthSession;
 import br.com.emoney.model.CoinTransfer;
+import br.com.emoney.model.Message;
 import br.com.emoney.model.Professor;
 import br.com.emoney.model.Student;
 import br.com.emoney.model.UserRole;
+import br.com.emoney.repository.MessageRepository;
 import br.com.emoney.repository.ProfessorRepository;
 import br.com.emoney.repository.TransferRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,15 +25,19 @@ public class ProfessorService {
     private final ProfessorRepository professorRepository;
     private final StudentService studentService;
     private final TransferRepository transferRepository;
+    private final MessageRepository messageRepository;
     private final ValidationService validationService;
     private final EmailService emailService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public ProfessorService(ProfessorRepository professorRepository, StudentService studentService, TransferRepository transferRepository, ValidationService validationService, EmailService emailService) {
+    public ProfessorService(ProfessorRepository professorRepository, StudentService studentService, TransferRepository transferRepository, MessageRepository messageRepository, ValidationService validationService, EmailService emailService, BCryptPasswordEncoder passwordEncoder) {
         this.professorRepository = professorRepository;
         this.studentService = studentService;
         this.transferRepository = transferRepository;
+        this.messageRepository = messageRepository;
         this.validationService = validationService;
         this.emailService = emailService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Professor findEntityById(java.util.UUID professorId) {
@@ -72,6 +79,13 @@ public class ProfessorService {
         professorRepository.save(professor);
         studentService.save(student);
         transferRepository.save(new CoinTransfer(professor.getId(), student.getId(), request.getQuantidade(), motivo));
+        messageRepository.save(new Message(
+                professor.getId(), UserRole.INSTITUTION, "HappyCoin",
+                student.getId(), UserRole.STUDENT, student.getNome(),
+                "Voce recebeu " + request.getQuantidade() + " moedas",
+                "Voce recebeu " + request.getQuantidade() + " HappyCoins de " + professor.getNome() + ".\n\nMotivo: " + motivo,
+                null
+        ).withType("COIN_TRANSFER"));
         emailService.sendCoinTransferConfirmation(professor, student, request.getQuantidade(), motivo);
         emailService.sendCoinReceivedNotification(professor, student, request.getQuantidade(), motivo);
 
@@ -95,7 +109,7 @@ public class ProfessorService {
             professor.setEmail(email);
         }
         if (request.getSenha() != null && !request.getSenha().isBlank()) {
-            professor.setSenha(validationService.senha(request.getSenha()));
+            professor.setSenha(passwordEncoder.encode(validationService.senha(request.getSenha())));
         }
         if (request.getCursos() != null && !request.getCursos().isEmpty()) {
             professor.setCursos(validationService.cursos(request.getCursos()));

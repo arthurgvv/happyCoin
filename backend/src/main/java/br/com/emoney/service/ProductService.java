@@ -7,10 +7,12 @@ import br.com.emoney.messaging.PurchaseEventProducer;
 import br.com.emoney.messaging.PurchaseNotification;
 import br.com.emoney.model.AuthSession;
 import br.com.emoney.model.Company;
+import br.com.emoney.model.Message;
 import br.com.emoney.model.Product;
 import br.com.emoney.model.ProductPurchase;
 import br.com.emoney.model.Student;
 import br.com.emoney.model.UserRole;
+import br.com.emoney.repository.MessageRepository;
 import br.com.emoney.repository.ProductPurchaseRepository;
 import br.com.emoney.repository.ProductRepository;
 import br.com.emoney.repository.StudentRepository;
@@ -33,18 +35,24 @@ public class ProductService {
     private final CompanyService companyService;
     private final ValidationService validationService;
     private final PurchaseEventProducer purchaseEventProducer;
+    private final MessageRepository messageRepository;
 
-    public ProductService(ProductRepository productRepository, ProductPurchaseRepository purchaseRepository, StudentRepository studentRepository, CompanyService companyService, ValidationService validationService, PurchaseEventProducer purchaseEventProducer) {
+    public ProductService(ProductRepository productRepository, ProductPurchaseRepository purchaseRepository, StudentRepository studentRepository, CompanyService companyService, ValidationService validationService, PurchaseEventProducer purchaseEventProducer, MessageRepository messageRepository) {
         this.productRepository = productRepository;
         this.purchaseRepository = purchaseRepository;
         this.studentRepository = studentRepository;
         this.companyService = companyService;
         this.validationService = validationService;
         this.purchaseEventProducer = purchaseEventProducer;
+        this.messageRepository = messageRepository;
     }
 
     public List<Product> list() {
         return productRepository.findAll();
+    }
+
+    public List<Product> listByCompany(UUID companyId) {
+        return productRepository.findByCompanyId(companyId);
     }
 
     public Product create(AuthSession session, ProductRequest request) {
@@ -69,6 +77,13 @@ public class ProductService {
                 imageUrl,
                 company.getId()
         );
+
+        if (request.getQuantidade() != null) {
+            if (request.getQuantidade() < 0) {
+                throw new ResponseStatusException(BAD_REQUEST, "Quantidade nao pode ser negativa.");
+            }
+            product.setQuantidade(request.getQuantidade());
+        }
 
         return productRepository.save(product);
     }
@@ -97,6 +112,10 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Produto nao encontrado."));
 
+        if (product.getQuantidade() != null && product.getQuantidade() == 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "Produto esgotado.");
+        }
+
         Student student = studentRepository.findById(session.getUserId())
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Aluno nao encontrado."));
 
@@ -107,6 +126,11 @@ public class ProductService {
         student.setSaldoMoedas(student.getSaldoMoedas() - product.getCustoMoedas());
         Student saved = studentRepository.save(student);
 
+        if (product.getQuantidade() != null) {
+            product.setQuantidade(product.getQuantidade() - 1);
+            productRepository.save(product);
+        }
+
         ProductPurchase purchase = purchaseRepository.save(new ProductPurchase(
                 product.getId(),
                 product.getCompanyId(),
@@ -116,6 +140,43 @@ public class ProductService {
                 student.getEmail(),
                 product.getCustoMoedas()
         ));
+        String couponCode = couponCode(purchase.getId());
+        String companyName = product.getEmpresaParceira() == null || product.getEmpresaParceira().isBlank()
+                ? "Empresa parceira"
+                : product.getEmpresaParceira();
+        messageRepository.save(new Message(
+                product.getCompanyId() != null ? product.getCompanyId() : product.getId(),
+                UserRole.COMPANY,
+                companyName,
+                student.getId(),
+                UserRole.STUDENT,
+                student.getNome(),
+                "Cupom disponivel: " + product.getNome(),
+                "Seu resgate foi confirmado.\n\nProduto: " + product.getNome()
+                        + "\nEmpresa: " + companyName
+                        + "\nCodigo do cupom: " + couponCode
+                        + "\nMoedas utilizadas: " + product.getCustoMoedas()
+                        + "\n\nUse o botao Ver QR ou apresente este codigo para a empresa parceira.",
+                null
+        ).withType("PURCHASE_COUPON").withPurchaseId(purchase.getId()));
+
+        if (product.getCompanyId() != null) {
+            messageRepository.save(new Message(
+                    product.getId(),
+                    UserRole.INSTITUTION,
+                    "HappyCoin",
+                    product.getCompanyId(),
+                    UserRole.COMPANY,
+                    companyName,
+                    "Novo resgate: " + product.getNome(),
+                    "Um aluno resgatou uma vantagem da sua empresa.\n\nAluno: " + student.getNome()
+                            + "\nEmail do aluno: " + student.getEmail()
+                            + "\nProduto: " + product.getNome()
+                            + "\nCodigo do cupom: " + couponCode
+                            + "\nMoedas utilizadas: " + product.getCustoMoedas(),
+                    null
+            ).withType("PURCHASE_NOTIFICATION").withPurchaseId(purchase.getId()));
+        }
 
         purchaseEventProducer.publish(new PurchaseNotification(
                 purchase.getId(),
@@ -127,6 +188,10 @@ public class ProductService {
         ));
 
         return new StudentResponse(saved);
+    }
+
+    private String couponCode(UUID purchaseId) {
+        return purchaseId.toString().toUpperCase().replace("-", "");
     }
 
     public Product update(AuthSession session, UUID productId, ProductRequest request) {
@@ -153,6 +218,10 @@ public class ProductService {
         if (request.getFotoUrl() != null && !request.getFotoUrl().isBlank()) {
             product.setImageUrl(request.getFotoUrl());
         }
+        if (request.getQuantidade() != null && request.getQuantidade() < 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "Quantidade nao pode ser negativa.");
+        }
+        product.setQuantidade(request.getQuantidade()); // null = ilimitado
 
         return productRepository.save(product);
     }

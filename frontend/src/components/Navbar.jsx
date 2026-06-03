@@ -113,6 +113,12 @@ function Navbar({ activePage, onChangePage, onLogout, role, tabs, user, subtitle
   const initials = displayName
     ? displayName.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase()
     : "?";
+  const iconFor = (tab) => (
+    <span className="nav-tab-icon">
+      {NAV_ICONS[tab.key] ?? NAV_ICONS.overview}
+      {tab.badge > 0 && <span className="nav-tab-badge">{tab.badge}</span>}
+    </span>
+  );
 
   return (
     <nav className={`navbar${role === "PROFESSOR" || role === "STUDENT" || role === "COMPANY" ? " navbar-professor" : ""}`}>
@@ -137,11 +143,11 @@ function Navbar({ activePage, onChangePage, onLogout, role, tabs, user, subtitle
             {role === "PROFESSOR" ? (
               <>
                 {tab.label}
-                {NAV_ICONS[tab.key] ?? NAV_ICONS.overview}
+                {iconFor(tab)}
               </>
             ) : (
               <>
-                {NAV_ICONS[tab.key] ?? NAV_ICONS.overview}
+                {iconFor(tab)}
                 {tab.label}
               </>
             )}

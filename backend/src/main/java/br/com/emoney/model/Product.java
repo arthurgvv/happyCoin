@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 import java.util.UUID;
 
@@ -33,6 +34,19 @@ public class Product {
     @Column(name = "company_id")
     private UUID companyId;
 
+    /**
+     * Quantidade disponível em estoque.
+     * null = sem controle de estoque (ilimitado).
+     * 0    = esgotado.
+     * > 0  = disponível.
+     */
+    @Column(name = "quantidade")
+    private Integer quantidade;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     public Product() {
     }
 
@@ -50,59 +64,27 @@ public class Product {
         this.companyId = companyId;
     }
 
-    public UUID getId() {
-        return id;
-    }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
 
-    public String getNome() {
-        return nome;
-    }
+    public String getEmpresaParceira() { return empresaParceira; }
+    public void setEmpresaParceira(String empresaParceira) { this.empresaParceira = empresaParceira; }
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
 
-    public String getEmpresaParceira() {
-        return empresaParceira;
-    }
+    public int getCustoMoedas() { return custoMoedas; }
+    public void setCustoMoedas(int custoMoedas) { this.custoMoedas = custoMoedas; }
 
-    public void setEmpresaParceira(String empresaParceira) {
-        this.empresaParceira = empresaParceira;
-    }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public String getDescricao() {
-        return descricao;
-    }
+    public UUID getCompanyId() { return companyId; }
+    public void setCompanyId(UUID companyId) { this.companyId = companyId; }
 
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public int getCustoMoedas() {
-        return custoMoedas;
-    }
-
-    public void setCustoMoedas(int custoMoedas) {
-        this.custoMoedas = custoMoedas;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public UUID getCompanyId() {
-        return companyId;
-    }
-
-    public void setCompanyId(UUID companyId) {
-        this.companyId = companyId;
-    }
+    public Integer getQuantidade() { return quantidade; }
+    public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
 }

@@ -3,6 +3,7 @@ import QRCode from "qrcode";
 
 function QRCodeModal({ purchase, onClose }) {
   const canvasRef = useRef(null);
+  const couponCode = purchase?.id ? String(purchase.id).replaceAll("-", "").toUpperCase() : "";
 
   useEffect(() => {
     if (!purchase || !canvasRef.current) return;
@@ -41,6 +42,7 @@ function QRCodeModal({ purchase, onClose }) {
             <p><strong>Aluno:</strong> {purchase.studentName}</p>
             <p><strong>Moedas:</strong> {purchase.custoMoedas}</p>
             <p><strong>Data:</strong> {purchase.criadoEm ? new Date(purchase.criadoEm).toLocaleString("pt-BR") : "-"}</p>
+            <p style={{ wordBreak: "break-all" }}><strong>Codigo:</strong> {couponCode}</p>
           </div>
         </div>
       </section>

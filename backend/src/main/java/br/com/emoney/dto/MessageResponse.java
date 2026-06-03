@@ -17,6 +17,8 @@ public class MessageResponse {
     private String body;
     private boolean lido;
     private UUID replyToId;
+    private String type;
+    private UUID purchaseId;
     private LocalDateTime criadoEm;
 
     public MessageResponse(Message m) {
@@ -31,6 +33,8 @@ public class MessageResponse {
         this.body = m.getBody();
         this.lido = m.isLido();
         this.replyToId = m.getReplyToId();
+        this.type = m.getType();
+        this.purchaseId = m.getPurchaseId();
         this.criadoEm = m.getCriadoEm();
     }
 
@@ -45,5 +49,7 @@ public class MessageResponse {
     public String getBody() { return body; }
     public boolean isLido() { return lido; }
     public UUID getReplyToId() { return replyToId; }
+    public String getType() { return type; }
+    public UUID getPurchaseId() { return purchaseId; }
     public LocalDateTime getCriadoEm() { return criadoEm; }
 }

@@ -5,6 +5,10 @@ export const productService = {
     return apiRequest("/products");
   },
 
+  listMine() {
+    return apiRequest("/products/mine");
+  },
+
   create(payload) {
     return apiRequest("/products", {
       method: "POST",

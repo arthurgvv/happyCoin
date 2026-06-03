@@ -47,6 +47,10 @@ public class Message {
 
     private UUID replyToId;
 
+    private String type;
+
+    private UUID purchaseId;
+
     @Column(nullable = false)
     private LocalDateTime criadoEm = LocalDateTime.now();
 
@@ -66,6 +70,16 @@ public class Message {
         this.replyToId = replyToId;
     }
 
+    public Message withType(String type) {
+        this.type = type;
+        return this;
+    }
+
+    public Message withPurchaseId(UUID purchaseId) {
+        this.purchaseId = purchaseId;
+        return this;
+    }
+
     public UUID getId() { return id; }
     public UUID getFromId() { return fromId; }
     public UserRole getFromRole() { return fromRole; }
@@ -78,5 +92,7 @@ public class Message {
     public boolean isLido() { return lido; }
     public void setLido(boolean lido) { this.lido = lido; }
     public UUID getReplyToId() { return replyToId; }
+    public String getType() { return type; }
+    public UUID getPurchaseId() { return purchaseId; }
     public LocalDateTime getCriadoEm() { return criadoEm; }
 }

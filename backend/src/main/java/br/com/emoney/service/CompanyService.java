@@ -5,6 +5,7 @@ import br.com.emoney.dto.RegisterCompanyRequest;
 import br.com.emoney.dto.UpdateCompanyRequest;
 import br.com.emoney.model.Company;
 import br.com.emoney.repository.CompanyRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -12,15 +13,19 @@ import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Service
 public class CompanyService {
     private final CompanyRepository companyRepository;
     private final ValidationService validationService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public CompanyService(CompanyRepository companyRepository, ValidationService validationService) {
+    public CompanyService(CompanyRepository companyRepository, ValidationService validationService,
+                          BCryptPasswordEncoder passwordEncoder) {
         this.companyRepository = companyRepository;
         this.validationService = validationService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Company create(RegisterCompanyRequest request) {
@@ -35,11 +40,12 @@ public class CompanyService {
             throw new ResponseStatusException(CONFLICT, "Ja existe empresa com este CNPJ.");
         }
 
+        String rawPassword = validationService.senha(request.getSenha());
         Company company = new Company(
                 validationService.text(request.getNomeFantasia(), "Nome fantasia"),
                 cnpj,
                 email,
-                validationService.senha(request.getSenha())
+                passwordEncoder.encode(rawPassword)
         );
 
         return companyRepository.save(company);
@@ -47,10 +53,10 @@ public class CompanyService {
 
     public Company authenticate(String email, String senha) {
         Company company = companyRepository.findByEmail(validationService.text(email, "Email").toLowerCase())
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Email ou senha invalidos."));
+                .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Email ou senha invalidos."));
 
-        if (!company.getSenha().equals(senha)) {
-            throw new ResponseStatusException(NOT_FOUND, "Email ou senha invalidos.");
+        if (!passwordEncoder.matches(senha, company.getSenha())) {
+            throw new ResponseStatusException(UNAUTHORIZED, "Email ou senha invalidos.");
         }
 
         return company;
@@ -81,7 +87,7 @@ public class CompanyService {
             company.setEmail(email);
         }
         if (request.getSenha() != null && !request.getSenha().isBlank()) {
-            company.setSenha(validationService.senha(request.getSenha()));
+            company.setSenha(passwordEncoder.encode(validationService.senha(request.getSenha())));
         }
         if (request.getPhotoUrl() != null) {
             company.setPhotoUrl(request.getPhotoUrl());
