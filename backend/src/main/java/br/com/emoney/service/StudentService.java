@@ -7,7 +7,6 @@ import br.com.emoney.model.Institution;
 import br.com.emoney.model.Student;
 import br.com.emoney.repository.InstitutionRepository;
 import br.com.emoney.repository.StudentRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -23,14 +22,14 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final ValidationService validationService;
     private final InstitutionRepository institutionRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordService passwordService;
 
     public StudentService(StudentRepository studentRepository, ValidationService validationService,
-                          InstitutionRepository institutionRepository, BCryptPasswordEncoder passwordEncoder) {
+                          InstitutionRepository institutionRepository, PasswordService passwordService) {
         this.studentRepository = studentRepository;
         this.validationService = validationService;
         this.institutionRepository = institutionRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.passwordService = passwordService;
     }
 
     public List<StudentResponse> list() {
@@ -68,7 +67,7 @@ public class StudentService {
                 validationService.text(request.getEndereco(), "Endereco"),
                 resolveInstitutionName(request.getInstituicao()),
                 validationService.curso(request.getCurso()),
-                passwordEncoder.encode(rawPassword)
+                passwordService.encode(rawPassword)
         );
         student.setInstitutionId(resolveInstitutionId(request.getInstituicao()));
 
@@ -79,8 +78,13 @@ public class StudentService {
         Student student = studentRepository.findByEmail(validationService.text(email, "Email").toLowerCase())
                 .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Email ou senha invalidos."));
 
-        if (!passwordEncoder.matches(senha, student.getSenha())) {
+        if (!passwordService.matches(senha, student.getSenha())) {
             throw new ResponseStatusException(UNAUTHORIZED, "Email ou senha invalidos.");
+        }
+
+        if (passwordService.needsRehash(student.getSenha())) {
+            student.setSenha(passwordService.encode(senha));
+            return studentRepository.save(student);
         }
 
         return student;
@@ -98,7 +102,7 @@ public class StudentService {
         student.setCurso(validationService.curso(request.getCurso()));
 
         if (request.getSenha() != null && !request.getSenha().isBlank()) {
-            student.setSenha(passwordEncoder.encode(validationService.senha(request.getSenha())));
+            student.setSenha(passwordService.encode(validationService.senha(request.getSenha())));
         }
         if (request.getPhotoUrl() != null) {
             student.setPhotoUrl(request.getPhotoUrl());

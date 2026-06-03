@@ -17,7 +17,6 @@ import br.com.emoney.model.Student;
 import br.com.emoney.model.UserRole;
 import br.com.emoney.repository.ProfessorRepository;
 import br.com.emoney.repository.SessionRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -30,17 +29,17 @@ public class AuthService {
     private final InstitutionService institutionService;
     private final ProfessorRepository professorRepository;
     private final SessionRepository sessionRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordService passwordService;
 
     public AuthService(StudentService studentService, CompanyService companyService,
                        InstitutionService institutionService, ProfessorRepository professorRepository,
-                       SessionRepository sessionRepository, BCryptPasswordEncoder passwordEncoder) {
+                       SessionRepository sessionRepository, PasswordService passwordService) {
         this.studentService = studentService;
         this.companyService = companyService;
         this.institutionService = institutionService;
         this.professorRepository = professorRepository;
         this.sessionRepository = sessionRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.passwordService = passwordService;
     }
 
     public AuthResponse register(RegisterStudentRequest request) {
@@ -63,7 +62,11 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         Professor professor = professorRepository.findByEmail(request.getEmail()).orElse(null);
-        if (professor != null && passwordEncoder.matches(request.getSenha(), professor.getSenha())) {
+        if (professor != null && passwordService.matches(request.getSenha(), professor.getSenha())) {
+            if (passwordService.needsRehash(professor.getSenha())) {
+                professor.setSenha(passwordService.encode(request.getSenha()));
+                professorRepository.save(professor);
+            }
             AuthSession session = sessionRepository.create(professor.getId(), UserRole.PROFESSOR);
             return new AuthResponse(session.getToken(), UserRole.PROFESSOR, new ProfessorResponse(professor));
         }

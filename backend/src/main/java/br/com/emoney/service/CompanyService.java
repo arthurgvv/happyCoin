@@ -5,7 +5,6 @@ import br.com.emoney.dto.RegisterCompanyRequest;
 import br.com.emoney.dto.UpdateCompanyRequest;
 import br.com.emoney.model.Company;
 import br.com.emoney.repository.CompanyRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,13 +18,13 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 public class CompanyService {
     private final CompanyRepository companyRepository;
     private final ValidationService validationService;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordService passwordService;
 
     public CompanyService(CompanyRepository companyRepository, ValidationService validationService,
-                          BCryptPasswordEncoder passwordEncoder) {
+                          PasswordService passwordService) {
         this.companyRepository = companyRepository;
         this.validationService = validationService;
-        this.passwordEncoder = passwordEncoder;
+        this.passwordService = passwordService;
     }
 
     public Company create(RegisterCompanyRequest request) {
@@ -45,7 +44,7 @@ public class CompanyService {
                 validationService.text(request.getNomeFantasia(), "Nome fantasia"),
                 cnpj,
                 email,
-                passwordEncoder.encode(rawPassword)
+                passwordService.encode(rawPassword)
         );
 
         return companyRepository.save(company);
@@ -55,8 +54,13 @@ public class CompanyService {
         Company company = companyRepository.findByEmail(validationService.text(email, "Email").toLowerCase())
                 .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Email ou senha invalidos."));
 
-        if (!passwordEncoder.matches(senha, company.getSenha())) {
+        if (!passwordService.matches(senha, company.getSenha())) {
             throw new ResponseStatusException(UNAUTHORIZED, "Email ou senha invalidos.");
+        }
+
+        if (passwordService.needsRehash(company.getSenha())) {
+            company.setSenha(passwordService.encode(senha));
+            return companyRepository.save(company);
         }
 
         return company;
@@ -87,7 +91,7 @@ public class CompanyService {
             company.setEmail(email);
         }
         if (request.getSenha() != null && !request.getSenha().isBlank()) {
-            company.setSenha(passwordEncoder.encode(validationService.senha(request.getSenha())));
+            company.setSenha(passwordService.encode(validationService.senha(request.getSenha())));
         }
         if (request.getPhotoUrl() != null) {
             company.setPhotoUrl(request.getPhotoUrl());

@@ -15,7 +15,6 @@ import br.com.emoney.repository.CompanyRepository;
 import br.com.emoney.repository.InstitutionRepository;
 import br.com.emoney.repository.ProfessorRepository;
 import br.com.emoney.repository.StudentRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -34,17 +33,17 @@ public class InstitutionService {
     private final ValidationService validationService;
     private final StudentRepository studentRepository;
     private final CompanyRepository companyRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordService passwordService;
 
     public InstitutionService(InstitutionRepository institutionRepository, ProfessorRepository professorRepository,
                                StudentRepository studentRepository, CompanyRepository companyRepository,
-                               ValidationService validationService, BCryptPasswordEncoder passwordEncoder) {
+                               ValidationService validationService, PasswordService passwordService) {
         this.institutionRepository = institutionRepository;
         this.professorRepository = professorRepository;
         this.studentRepository = studentRepository;
         this.companyRepository = companyRepository;
         this.validationService = validationService;
-        this.passwordEncoder = passwordEncoder;
+        this.passwordService = passwordService;
     }
 
     public Institution create(RegisterInstitutionRequest request) {
@@ -63,7 +62,7 @@ public class InstitutionService {
         Institution institution = new Institution(
                 validationService.text(request.getNome(), "Nome da instituicao"),
                 email,
-                passwordEncoder.encode(rawPassword),
+                passwordService.encode(rawPassword),
                 validationService.text(request.getTelefone(), "Telefone"),
                 validationService.text(request.getEndereco(), "Endereco"),
                 identificador
@@ -90,7 +89,7 @@ public class InstitutionService {
                 validationService.text(request.getNome(), "Nome"),
                 cpf,
                 email,
-                passwordEncoder.encode(rawPassword),
+                passwordService.encode(rawPassword),
                 institution.getId(),
                 validationService.cursos(request.getCursos()),
                 withInitialSemesterCredit ? 1000 : 0
@@ -128,8 +127,13 @@ public class InstitutionService {
         Institution institution = institutionRepository.findByEmail(validationService.text(email, "Email").toLowerCase())
                 .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Email ou senha invalidos."));
 
-        if (!passwordEncoder.matches(senha, institution.getSenha())) {
+        if (!passwordService.matches(senha, institution.getSenha())) {
             throw new ResponseStatusException(UNAUTHORIZED, "Email ou senha invalidos.");
+        }
+
+        if (passwordService.needsRehash(institution.getSenha())) {
+            institution.setSenha(passwordService.encode(senha));
+            return institutionRepository.save(institution);
         }
 
         return institution;
@@ -162,7 +166,7 @@ public class InstitutionService {
             institution.setEmail(email);
         }
         if (request.getSenha() != null && !request.getSenha().isBlank()) {
-            institution.setSenha(passwordEncoder.encode(validationService.senha(request.getSenha())));
+            institution.setSenha(passwordService.encode(validationService.senha(request.getSenha())));
         }
         if (request.getTelefone() != null && !request.getTelefone().isBlank()) {
             institution.setTelefone(validationService.text(request.getTelefone(), "Telefone"));
@@ -200,7 +204,7 @@ public class InstitutionService {
             professor.setEmail(email);
         }
         if (request.getSenha() != null && !request.getSenha().isBlank()) {
-            professor.setSenha(passwordEncoder.encode(validationService.senha(request.getSenha())));
+            professor.setSenha(passwordService.encode(validationService.senha(request.getSenha())));
         }
         if (request.getCursos() != null && !request.getCursos().isEmpty()) {
             professor.setCursos(validationService.cursos(request.getCursos()));
