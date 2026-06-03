@@ -1,0 +1,48 @@
+@startuml
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam sequenceParticipantBorderThickness 1.5
+
+actor "Usuario" as U
+participant "Sistema de\nMoeda Estudantil" as SME
+database "Banco de\nDados" as BD
+
+== 1. Solicita login ==
+
+U -> SME: 1.1 fazerLogin(email, senha)
+
+activate SME
+
+SME -> BD: 1.2 buscarUsuarioPorEmail(email)
+
+activate BD
+
+BD --> SME: 1.3 dadosUsuario(id, perfil, senhaHash, status)
+
+deactivate BD
+
+alt Usuario encontrado e ativo
+
+    SME -> SME: 1.4 validarSenha(senha, senhaHash)
+
+    alt Credenciais validas
+
+        SME -> SME: 1.5 gerarTokenSessao(id, perfil)
+        SME --> U: 1.6 loginBemSucedido(tokenSessao, perfil)
+
+    else Senha invalida
+
+        SME --> U: 1.7 erroLogin("E-mail ou senha invalidos.")
+
+    end
+
+else Usuario inexistente ou inativo
+
+    SME --> U: 1.8 erroLogin("E-mail ou senha invalidos.")
+
+end
+
+deactivate SME
+
+@enduml

@@ -1,0 +1,65 @@
+@startuml
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam sequenceParticipantBorderThickness 1.5
+
+actor "Empresa\nParceira" as EP
+participant "Sistema de\nMoeda Estudantil" as SME
+database "Banco de\nDados" as BD
+
+== 1. Cadastro da vantagem ==
+
+EP -> SME: 1.1 cadastrarVantagem(tokenSessao, titulo, descricao, custoMoedas, quantidade)
+
+activate SME
+
+SME -> SME: 1.2 validarSessaoEmpresa(tokenSessao)
+
+alt Empresa autenticada
+
+    SME -> SME: 1.3 validarDadosVantagem(titulo, descricao, custoMoedas, quantidade)
+
+    alt Dados validos
+
+        SME -> BD: 1.4 buscarEmpresaParceira(empresaID)
+
+        activate BD
+
+        BD --> SME: 1.5 dadosEmpresa(status)
+
+        deactivate BD
+
+        alt Empresa ativa
+
+            SME -> BD: 1.6 salvarVantagem(empresaID, titulo, descricao, custoMoedas, quantidade)
+
+            activate BD
+
+            BD --> SME: 1.7 vantagemCadastrada(vantagemID)
+
+            deactivate BD
+
+            SME --> EP: 1.8 cadastroConcluido("Vantagem cadastrada com sucesso.")
+
+        else Empresa inativa
+
+            SME --> EP: 1.9 erroCadastro("Empresa parceira inativa.")
+
+        end
+
+    else Dados invalidos
+
+        SME --> EP: 1.10 erroCadastro("Revise os dados da vantagem.")
+
+    end
+
+else Sessao invalida
+
+    SME --> EP: 1.11 erroAutenticacao("Realize login para cadastrar vantagens.")
+
+end
+
+deactivate SME
+
+@enduml

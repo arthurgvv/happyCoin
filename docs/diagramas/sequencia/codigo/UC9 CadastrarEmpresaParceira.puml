@@ -1,0 +1,72 @@
+@startuml
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam sequenceParticipantBorderThickness 1.5
+
+actor "Empresa\nParceira" as EP
+participant "Sistema de\nMoeda Estudantil" as SME
+database "Banco de\nDados" as BD
+
+== 1. Cadastro da empresa parceira ==
+
+EP -> SME: 1.1 solicitarCadastroEmpresa(nome, cnpj, email, senha, endereco)
+
+activate SME
+
+SME -> SME: 1.2 validarDadosObrigatorios(nome, cnpj, email, senha)
+
+alt Dados preenchidos corretamente
+
+    SME -> BD: 1.3 verificarCnpjExistente(cnpj)
+
+    activate BD
+
+    BD --> SME: 1.4 resultadoVerificacaoCnpj
+
+    deactivate BD
+
+    alt CNPJ disponivel
+
+        SME -> BD: 1.5 verificarEmailExistente(email)
+
+        activate BD
+
+        BD --> SME: 1.6 resultadoVerificacaoEmail
+
+        deactivate BD
+
+        alt E-mail disponivel
+
+            SME -> SME: 1.7 criptografarSenha(senha)
+            SME -> BD: 1.8 registrarEmpresaParceira(nome, cnpj, email, senhaHash, endereco)
+
+            activate BD
+
+            BD --> SME: 1.9 empresaRegistrada(empresaID)
+
+            deactivate BD
+
+            SME --> EP: 1.10 cadastroConcluido("Empresa parceira cadastrada com sucesso.")
+
+        else E-mail ja cadastrado
+
+            SME --> EP: 1.11 erroCadastro("E-mail ja esta em uso.")
+
+        end
+
+    else CNPJ ja cadastrado
+
+        SME --> EP: 1.12 erroCadastro("CNPJ ja cadastrado.")
+
+    end
+
+else Dados invalidos
+
+    SME --> EP: 1.13 erroCadastro("Preencha todos os campos obrigatorios.")
+
+end
+
+deactivate SME
+
+@enduml

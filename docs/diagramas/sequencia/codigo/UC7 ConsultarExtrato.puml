@@ -1,0 +1,55 @@
+@startuml
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam sequenceParticipantBorderThickness 1.5
+
+actor "Usuario" as U
+participant "Sistema de\nMoeda Estudantil" as SME
+database "Banco de\nDados" as BD
+
+== 1. Consulta do extrato ==
+
+U -> SME: 1.1 solicitarExtrato(tokenSessao, periodo)
+
+activate SME
+
+SME -> SME: 1.2 validarSessao(tokenSessao)
+
+alt Sessao valida
+
+    SME -> BD: 1.3 buscarContaUsuario(usuarioID)
+
+    activate BD
+
+    BD --> SME: 1.4 dadosConta(contaID, saldoAtual)
+
+    deactivate BD
+
+    SME -> BD: 1.5 buscarMovimentacoes(contaID, periodo)
+
+    activate BD
+
+    BD --> SME: 1.6 listaMovimentacoes(data, tipo, valor, descricao)
+
+    deactivate BD
+
+    alt Existem movimentacoes
+
+        SME --> U: 1.7 exibirExtrato(saldoAtual, listaMovimentacoes)
+
+    else Nenhuma movimentacao encontrada
+
+        SME --> U: 1.8 exibirExtratoVazio(saldoAtual, "Nenhuma movimentacao no periodo.")
+
+    end
+
+else Sessao invalida
+
+    SME --> U: 1.9 erroAutenticacao("Realize login para consultar o extrato.")
+
+end
+
+deactivate SME
+
+@enduml
