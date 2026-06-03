@@ -1,0 +1,112 @@
+@startuml
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam sequenceParticipantBorderThickness 1.5
+
+actor "Aluno" as A
+participant "Sistema de\nMoeda Estudantil" as SME
+database "Banco de\nDados" as BD
+participant "Serviço de\nEmail (SendGrid)" as SE
+
+== 1. Solicitação de Cadastro ==
+
+A -> SME: 1.1 solicitarCadastro(nome, email, cpf, curso, instituicao)
+
+activate SME
+
+SME -> BD: 1.2 verificarEmailExistente(email)
+
+activate BD
+
+BD --> SME: 1.3 resultadoVerificacao
+
+deactivate BD
+
+alt E-mail já cadastrado
+
+    SME --> A: 1.4 erroCadastro("E-mail já está em uso. Tente outro.")
+
+else E-mail disponível
+
+    SME -> BD: 1.5 verificarCpfExistente(cpf)
+
+    activate BD
+
+    BD --> SME: 1.6 resultadoVerificacaoCpf
+
+    deactivate BD
+
+    alt CPF já cadastrado
+
+        SME --> A: 1.7 erroCadastro("CPF já vinculado a uma conta existente.")
+
+    else Dados válidos
+
+        SME -> SME: 1.8 gerarSenhaProvisoria()
+
+        SME -> BD: 1.9 registrarAluno(nome, email, cpf, curso, instituicao, senhaHash)
+
+        activate BD
+
+        BD --> SME: 1.10 cadastroRegistrado(alunoID)
+
+        deactivate BD
+
+        SME --> A: 1.11 cadastroConcluido("Cadastro realizado com sucesso.")
+
+    end
+
+end
+
+deactivate SME
+
+== 2. Envio de Confirmação por E-mail ==
+
+SME ->> SE: 2.1 enviarEmailConfirmacao(email, senhaProvisoria, detalhesAluno)
+
+activate SE
+
+SE ->> A: 2.2 emailConfirmacaoCadastro(senha_provisoria, link_acesso)
+
+deactivate SE
+
+== 3. Primeiro Acesso e Troca de Senha ==
+
+A -> SME: 3.1 fazerLogin(email, senhaProvisoria)
+
+activate SME
+
+SME -> BD: 3.2 autenticarUsuario(email, senhaHash)
+
+activate BD
+
+BD --> SME: 3.3 dadosUsuario
+
+deactivate BD
+
+alt Credenciais válidas
+
+    SME --> A: 3.4 solicitarTrocaSenha("Defina uma nova senha para continuar.")
+
+    A -> SME: 3.5 definirNovaSenha(novaSenha)
+
+    SME -> BD: 3.6 atualizarSenha(alunoID, novaSenhaHash)
+
+    activate BD
+
+    BD --> SME: 3.7 senhaAtualizada
+
+    deactivate BD
+
+    SME --> A: 3.8 loginBemSucedido(tokenSessao)
+
+else Credenciais inválidas
+
+    SME --> A: 3.9 erroLogin("Credenciais inválidas. Verifique e tente novamente.")
+
+end
+
+deactivate SME
+
+@enduml

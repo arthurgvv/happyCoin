@@ -1,0 +1,97 @@
+@startuml
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam sequenceParticipantBorderThickness 1.5
+
+actor "Aluno" as A
+participant "Sistema de\nMoeda Estudantil" as SME
+database "Banco de\nDados" as BD
+
+== 1. Autenticação do Aluno ==
+
+A -> SME: 1.1 fazerLogin(email, senha)
+
+activate SME
+
+SME -> BD: 1.2 autenticarUsuario(email, senhaHash)
+
+activate BD
+
+BD --> SME: 1.3 dadosUsuario(alunoID, saldoAtual)
+
+deactivate BD
+
+alt Credenciais válidas
+
+    SME --> A: 1.4 loginBemSucedido(tokenSessao, saldoAtual)
+
+else Credenciais inválidas
+
+    SME --> A: 1.5 erroLogin("Credenciais inválidas.")
+
+end
+
+deactivate SME
+
+== 2. Listagem de Vantagens Disponíveis ==
+
+A -> SME: 2.1 solicitarListaVantagens()
+
+activate SME
+
+SME -> BD: 2.2 buscarVantagens()
+
+activate BD
+
+BD --> SME: 2.3 listaVantagens(id, descricao, custoCupom, empresaParceira)
+
+deactivate BD
+
+alt Vantagens disponíveis
+
+    SME --> A: 2.4 exibirVantagens(listaVantagens)
+
+else Nenhuma vantagem cadastrada
+
+    SME --> A: 2.5 informarAusencia("Nenhuma vantagem disponível no momento.")
+
+end
+
+deactivate SME
+
+== 3. Visualização de Detalhes da Vantagem ==
+
+A -> SME: 3.1 selecionarVantagem(vantagemID)
+
+activate SME
+
+SME -> BD: 3.2 buscarDetalhesVantagem(vantagemID)
+
+activate BD
+
+BD --> SME: 3.3 detalhesVantagem(descricao, custoCupom, empresaParceira, validade)
+
+deactivate BD
+
+SME -> BD: 3.4 consultarSaldoAluno(alunoID)
+
+activate BD
+
+BD --> SME: 3.5 saldoAtual
+
+deactivate BD
+
+alt Aluno possui saldo suficiente para resgatar
+
+    SME --> A: 3.6 exibirDetalhes(detalhesVantagem, saldoAtual, opcaoResgatar: true)
+
+else Saldo insuficiente para resgatar
+
+    SME --> A: 3.7 exibirDetalhes(detalhesVantagem, saldoAtual, opcaoResgatar: false, aviso: "Saldo insuficiente para resgatar esta vantagem.")
+
+end
+
+deactivate SME
+
+@enduml

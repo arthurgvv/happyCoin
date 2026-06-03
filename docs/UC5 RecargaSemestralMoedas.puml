@@ -1,0 +1,82 @@
+@startuml
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam sequenceParticipantBorderThickness 1.5
+
+actor "Scheduler" as SC
+participant "Sistema de\nMoeda Estudantil" as SME
+database "Banco de\nDados" as BD
+participant "Serviço de\nEmail (SendGrid)" as SE
+
+== 1. Disparo da Recarga Semestral ==
+
+SC -> SME: 1.1 iniciarRecargaSemestral(semestre, dataExecucao)
+
+activate SME
+
+SME -> BD: 1.2 verificarRecargaJaExecutada(semestre)
+
+activate BD
+
+BD --> SME: 1.3 statusRecarga
+
+deactivate BD
+
+alt Recarga já executada neste semestre
+
+    SME --> SC: 1.4 erroRecarga("Recarga semestral já foi processada para este semestre.")
+
+else Recarga pendente
+
+    SME -> BD: 1.5 buscarTodosProfessores()
+
+    activate BD
+
+    BD --> SME: 1.6 listaProfessores(professorID, nome, email, instituicao)
+
+    deactivate BD
+
+    alt Nenhum professor cadastrado
+
+        SME --> SC: 1.7 avisoRecarga("Nenhum professor cadastrado. Recarga não realizada.")
+
+    else Professores encontrados
+
+        loop Para cada professor na lista
+
+            SME -> BD: 1.8 definirCreditoSemestral(professorID, quantidadePadrao)
+
+            activate BD
+
+            BD --> SME: 1.9 saldoAtualizado(professorID, novoSaldo)
+
+            deactivate BD
+
+            SME ->> SE: 1.10 notificarProfessor(emailProfessor, quantidadeCreditada, semestre)
+
+            activate SE
+
+            SE ->> SME: 1.11 notificacaoEnviada
+
+            deactivate SE
+
+        end
+
+        SME -> BD: 1.12 registrarLogRecarga(semestre, dataExecucao, totalProfessores, totalMoedasDistribuidas)
+
+        activate BD
+
+        BD --> SME: 1.13 logRegistrado(recargaID)
+
+        deactivate BD
+
+        SME --> SC: 1.14 recargaConcluida(recargaID, totalProfessores, totalMoedasDistribuidas)
+
+    end
+
+end
+
+deactivate SME
+
+@enduml

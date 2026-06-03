@@ -1,0 +1,100 @@
+@startuml
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam sequenceParticipantBorderThickness 1.5
+
+actor "Aluno" as A
+participant "Sistema de\nMoeda Estudantil" as SME
+database "Banco de\nDados" as BD
+participant "Serviço de\nEmail (SendGrid)" as SE
+
+== 1. Solicitação de Resgate ==
+
+A -> SME: 1.1 solicitarResgate(alunoID, vantagemID)
+
+activate SME
+
+SME -> BD: 1.2 consultarSaldoAluno(alunoID)
+
+activate BD
+
+BD --> SME: 1.3 saldoAtual
+
+deactivate BD
+
+SME -> BD: 1.4 buscarCustoVantagem(vantagemID)
+
+activate BD
+
+BD --> SME: 1.5 custoVantagem
+
+deactivate BD
+
+alt Saldo insuficiente
+
+    SME --> A: 1.6 erroResgate("Saldo insuficiente. Você precisa de " + custoVantagem + " moedas.")
+
+else Saldo suficiente
+
+    SME -> BD: 1.7 verificarVantagemAtiva(vantagemID)
+
+    activate BD
+
+    BD --> SME: 1.8 statusVantagem
+
+    deactivate BD
+
+    alt Vantagem inativa ou expirada
+
+        SME --> A: 1.9 erroResgate("Esta vantagem não está mais disponível.")
+
+    else Vantagem ativa
+
+        SME -> SME: 1.10 gerarCodigoCupom(alunoID, vantagemID)
+
+        SME -> BD: 1.11 debitarMoedas(alunoID, custoVantagem)
+
+        activate BD
+
+        BD --> SME: 1.12 novoSaldo
+
+        deactivate BD
+
+        SME -> BD: 1.13 registrarResgate(alunoID, vantagemID, codigoCupom, dataResgate)
+
+        activate BD
+
+        BD --> SME: 1.14 resgateRegistrado(resgateID)
+
+        deactivate BD
+
+        SME --> A: 1.15 resgateConfirmado(codigoCupom, novoSaldo)
+
+    end
+
+end
+
+deactivate SME
+
+== 2. Envio do Cupom ao Aluno ==
+
+SME ->> SE: 2.1 enviarEmailCupomAluno(emailAluno, codigoCupom, detalhesVantagem)
+
+activate SE
+
+SE ->> A: 2.2 emailCupomResgatado(codigoCupom, instrucoes, validade)
+
+deactivate SE
+
+== 3. Notificação à Empresa Parceira ==
+
+SME ->> SE: 3.1 notificarEmpresaParceira(emailEmpresa, codigoCupom, dadosAluno)
+
+activate SE
+
+SE ->> SME: 3.2 notificacaoEnviada
+
+deactivate SE
+
+@enduml

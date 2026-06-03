@@ -1,0 +1,132 @@
+@startuml
+
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam sequenceParticipantBorderThickness 1.5
+
+actor "Professor" as PR
+participant "Sistema de\nMoeda Estudantil" as SME
+database "Banco de\nDados" as BD
+participant "Serviço de\nEmail (SendGrid)" as SE
+
+== 1. Autenticação do Professor ==
+
+PR -> SME: 1.1 fazerLogin(email, senha)
+
+activate SME
+
+SME -> BD: 1.2 autenticarUsuario(email, senhaHash)
+
+activate BD
+
+BD --> SME: 1.3 dadosUsuario(professorID, saldoDisponivel)
+
+deactivate BD
+
+alt Credenciais válidas
+
+    SME --> PR: 1.4 loginBemSucedido(tokenSessao, saldoDisponivel)
+
+else Credenciais inválidas
+
+    SME --> PR: 1.5 erroLogin("Credenciais inválidas.")
+
+end
+
+deactivate SME
+
+== 2. Seleção do Aluno e Definição do Envio ==
+
+PR -> SME: 2.1 buscarAluno(nomeOuEmail)
+
+activate SME
+
+SME -> BD: 2.2 pesquisarAluno(nomeOuEmail)
+
+activate BD
+
+BD --> SME: 2.3 listaAlunos(alunoID, nome, email, curso)
+
+deactivate BD
+
+alt Aluno encontrado
+
+    SME --> PR: 2.4 exibirResultadosBusca(listaAlunos)
+
+else Nenhum aluno encontrado
+
+    SME --> PR: 2.5 informarAusencia("Nenhum aluno encontrado com os dados informados.")
+
+end
+
+deactivate SME
+
+== 3. Envio de Moedas ==
+
+PR -> SME: 3.1 enviarMoedas(professorID, alunoID, quantidade, mensagem)
+
+activate SME
+
+SME -> BD: 3.2 consultarSaldoProfessor(professorID)
+
+activate BD
+
+BD --> SME: 3.3 saldoDisponivel
+
+deactivate BD
+
+alt Saldo insuficiente
+
+    SME --> PR: 3.4 erroEnvio("Saldo insuficiente. Você possui " + saldoDisponivel + " moedas disponíveis.")
+
+else Saldo suficiente
+
+    alt Quantidade excede limite por transação
+
+        SME --> PR: 3.5 erroEnvio("Valor excede o limite permitido por transação.")
+
+    else Quantidade válida
+
+        SME -> BD: 3.6 debitarMoedasProfessor(professorID, quantidade)
+
+        activate BD
+
+        BD --> SME: 3.7 saldoAtualizado(novoSaldoProfessor)
+
+        deactivate BD
+
+        SME -> BD: 3.8 creditarMoedasAluno(alunoID, quantidade)
+
+        activate BD
+
+        BD --> SME: 3.9 saldoAtualizado(novoSaldoAluno)
+
+        deactivate BD
+
+        SME -> BD: 3.10 registrarTransacao(professorID, alunoID, quantidade, mensagem, dataHora)
+
+        activate BD
+
+        BD --> SME: 3.11 transacaoRegistrada(transacaoID)
+
+        deactivate BD
+
+        SME --> PR: 3.12 envioConfirmado(transacaoID, novoSaldoProfessor)
+
+    end
+
+end
+
+deactivate SME
+
+== 4. Notificação ao Aluno ==
+
+SME ->> SE: 4.1 notificarAluno(emailAluno, quantidade, nomeProfessor, mensagem)
+
+activate SE
+
+SE ->> SME: 4.2 notificacaoEnviada
+
+deactivate SE
+
+@enduml
