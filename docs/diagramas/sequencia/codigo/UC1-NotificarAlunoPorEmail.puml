@@ -1,0 +1,93 @@
+@startuml UC1-NotificarAlunoPorEmail
+
+title UC1 - Notificar Aluno por Email\n(Confirmação de Resgate de Produto)
+
+<style>
+sequenceDiagram {
+  messageAlign center
+  responseMessageBelowArrow true
+}
+participant {
+  padding 20
+}
+box {
+  padding 10
+}
+</style>
+
+actor       "<<actor>>\nAluno"                       as Student
+boundary    "<<boundary>>\nProductController"         as Controller
+control     "<<control>>\nProductService"             as Service
+control     "<<control>>\nPurchaseEventProducer"      as Producer
+database    "<<entity>>\nStudentRepository"           as StudentRepo
+database    "<<entity>>\nProductRepository"           as ProductRepo
+database    "<<entity>>\nProductPurchaseRepository"   as PurchaseRepo
+queue       "RabbitMQ\n(purchase.queue)"              as MQ
+control     "<<control>>\nPurchaseEventConsumer"      as Consumer
+control     "<<control>>\nEmailService"               as EmailService
+boundary    "<<boundary>>\nJavaMailSender\n[SendGrid SMTP]" as SendGrid
+
+Student -> Controller : POST /api/products/{id}/purchase\n[Authorization: Bearer token]
+activate Controller
+
+Controller -> Controller : authService.requireSession(token)
+
+Controller -> Service : purchase(session, productId)
+activate Service
+
+Service -> ProductRepo : findById(productId)
+activate ProductRepo
+ProductRepo --> Service : Produto
+deactivate ProductRepo
+
+Service -> StudentRepo : findById(studentId)
+activate StudentRepo
+StudentRepo --> Service : Aluno
+deactivate StudentRepo
+
+Service -> Service : valida student.saldoMoedas\n>= product.custoMoedas
+
+Service -> StudentRepo : save(student)\n[saldo -= custoMoedas]
+activate StudentRepo
+StudentRepo --> Service : Aluno (saldo atualizado)
+deactivate StudentRepo
+
+Service -> PurchaseRepo : save(new ProductPurchase(\n  productId, companyId, studentId,\n  productName, studentName,\n  studentEmail, custoMoedas))
+activate PurchaseRepo
+PurchaseRepo --> Service : ProductPurchase\n(id = código do cupom)
+deactivate PurchaseRepo
+
+Service -> Producer : publish(new PurchaseNotification(\n  purchaseId, studentId, studentName,\n  studentEmail, productName, custoMoedas))
+activate Producer
+Producer -> MQ : convertAndSend(\n  PURCHASE_EXCHANGE,\n  PURCHASE_ROUTING,\n  notification)
+MQ --> Producer : aceito
+deactivate Producer
+
+Service --> Controller : StudentResponse
+deactivate Service
+
+Controller --> Student : 200 OK - StudentResponse
+deactivate Controller
+
+== Processamento assíncrono (RabbitMQ) ==
+
+MQ -> Consumer : onPurchase(PurchaseNotification)
+activate Consumer
+
+Consumer -> EmailService : sendPurchaseConfirmationToStudent(\n  studentEmail, studentName, productName, purchaseId)
+activate EmailService
+
+EmailService -> EmailService : monta HTML do email
+
+EmailService -> SendGrid : mailSender.send(MimeMessage)
+activate SendGrid
+SendGrid --> EmailService : 250 OK
+deactivate SendGrid
+
+EmailService --> Consumer : (void)
+deactivate EmailService
+
+Consumer --> MQ : confirmação
+deactivate Consumer
+
+@enduml

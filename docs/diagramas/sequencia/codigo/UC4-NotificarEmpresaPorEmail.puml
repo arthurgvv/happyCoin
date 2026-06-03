@@ -1,0 +1,54 @@
+@startuml UC4-NotificarEmpresaPorEmail
+
+title UC4 - Notificar Empresa Parceira por Email\n(Aviso de resgate realizado por aluno)
+
+<style>
+sequenceDiagram {
+  messageAlign center
+  responseMessageBelowArrow true
+}
+participant {
+  padding 20
+}
+</style>
+
+queue    "RabbitMQ\n(purchase.queue)"                as MQ
+control  "<<control>>\nPurchaseEventConsumer"         as Consumer
+database "<<entity>>\nProductPurchaseRepository"      as PurchaseRepo
+database "<<entity>>\nCompanyRepository"              as CompanyRepo
+control  "<<control>>\nEmailService"                  as EmailService
+boundary "<<boundary>>\nJavaMailSender\n[SendGrid SMTP]" as SendGrid
+actor    "<<actor>>\nEmpresa"                           as Company
+
+MQ -> Consumer : onPurchase(PurchaseNotification)
+activate Consumer
+
+Consumer -> PurchaseRepo : findById(notification.purchaseId)
+activate PurchaseRepo
+PurchaseRepo --> Consumer : ProductPurchase
+deactivate PurchaseRepo
+
+Consumer -> CompanyRepo : findById(purchase.companyId)
+activate CompanyRepo
+CompanyRepo --> Consumer : Company
+deactivate CompanyRepo
+
+Consumer -> EmailService : sendPurchaseNotificationToCompany(\n  to          = company.email,\n  nomeEmpresa = company.nomeFantasia,\n  nomeAluno   = notification.studentName,\n  produto     = notification.productName,\n  cupomId     = notification.purchaseId,\n  moedas      = notification.custoMoedas,\n  dataResgate = purchase.criadoEm)
+activate EmailService
+
+EmailService -> EmailService : monta HTML do email
+
+EmailService -> SendGrid : mailSender.send(MimeMessage)\n[subject: "Novo resgate realizado - HappyCoin"]
+activate SendGrid
+SendGrid --> EmailService : 250 OK
+deactivate SendGrid
+
+EmailService --> Consumer : (void)
+deactivate EmailService
+
+Consumer --> MQ : confirmação
+deactivate Consumer
+
+MQ --> Company : email entregue
+
+@enduml

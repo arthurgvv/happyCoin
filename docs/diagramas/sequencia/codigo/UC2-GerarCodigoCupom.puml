@@ -1,0 +1,34 @@
+@startuml UC2-GerarCodigoCupom
+
+title UC2 - Gerar Código de Cupom\n(Registro de ProductPurchase)
+
+<style>
+sequenceDiagram {
+  messageAlign center
+  responseMessageBelowArrow true
+}
+participant {
+  padding 20
+}
+</style>
+
+control  "<<control>>\nProductService"           as Service
+database "<<entity>>\nProductPurchaseRepository" as PurchaseRepo
+entity   "<<entity>>\nProductPurchase"           as Purchase
+
+Service -> PurchaseRepo : save(new ProductPurchase(\n  productId,\n  companyId,\n  studentId,\n  productName,\n  studentName,\n  studentEmail,\n  custoMoedas))
+activate PurchaseRepo
+
+PurchaseRepo -> Purchase : <<create>>\nid = UUID.randomUUID()\ncriadoEm = LocalDateTime.now()
+activate Purchase
+Purchase --> PurchaseRepo : ProductPurchase persistido
+deactivate Purchase
+
+PurchaseRepo --> Service : ProductPurchase\n[id = código único do cupom]
+deactivate PurchaseRepo
+
+Service -> Service : monta PurchaseNotification(\n  purchaseId, studentId, studentName,\n  studentEmail, productName, custoMoedas)
+
+Service --> Service : PurchaseNotification pronta\npara publicação no RabbitMQ
+
+@enduml
