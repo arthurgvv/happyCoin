@@ -1,7 +1,7 @@
 # happyCoin
 
 <div align="center">
-  <img src="docs/happyCoin.png" alt="happyCoin Logo" width="300px"/>
+  <img src="docs/assets/happyCoin.png" alt="happyCoin Logo" width="300px"/>
 </div>
 
 <br/>
@@ -130,11 +130,11 @@ Company     ──1:N──► Product
 
 | Diagrama de Classes | Diagrama de Componentes |
 | :---: | :---: |
-| <img src="docs/DiagramaDeClasses.png" alt="Diagrama de Classes" width="350px"> | <img src="docs/DiagramaDeComponentes.png" alt="Diagrama de Componentes" width="350px"> |
+| <img src="docs/diagramas/classes/DiagramaDeClasses.png" alt="Diagrama de Classes" width="350px"> | <img src="docs/diagramas/componentes/DiagramaDeComponentes.png" alt="Diagrama de Componentes" width="350px"> |
 
 | Diagrama de Casos de Uso | Diagrama ER |
 | :---: | :---: |
-| <img src="docs/DiagramaCasoDeUso-v2.png" alt="Diagrama de Casos de Uso" width="350px"> | <img src="docs/DER.jpeg" alt="Diagrama ER" width="350px"> |
+| <img src="docs/diagramas/casos-de-uso/DiagramaCasoDeUso-v2.png" alt="Diagrama de Casos de Uso" width="350px"> | <img src="docs/diagramas/der/DER.jpeg" alt="Diagrama ER" width="350px"> |
 
 ---
 
@@ -218,12 +218,16 @@ npm run dev
 .
 ├── README.md
 ├── docs/                              # Diagramas e documentacao
-│   ├── happyCoin.png
-│   ├── DiagramaDeClasses.png
-│   ├── DiagramaDeComponentes.png
-│   ├── DiagramaCasoDeUso-v2.png
-│   ├── HistoriasDeUsuario.pdf
-│   └── historias-usuario.md
+│   ├── assets/                        # Imagens e logos
+│   │   └── happyCoin.png
+│   └── diagramas/                     # Diagramas do projeto
+│       ├── classes/
+│       ├── componentes/
+│       ├── casos-de-uso/
+│       ├── der/
+│       └── sequencia/
+│           ├── codigo/               # Fontes PlantUML
+│           └── imagens/              # Diagramas exportados
 │
 ├── frontend/                          # Aplicacao React
 │   ├── index.html
