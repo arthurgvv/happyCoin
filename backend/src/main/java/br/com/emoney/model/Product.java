@@ -43,6 +43,9 @@ public class Product {
     @Column(name = "quantidade")
     private Integer quantidade;
 
+    @Column(name = "ativo")
+    private Boolean ativo = true;
+
     @Version
     @Column(name = "version")
     private Long version;
@@ -87,4 +90,8 @@ public class Product {
 
     public Integer getQuantidade() { return quantidade; }
     public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
+
+    public Boolean getAtivo() { return ativo; }
+    public void setAtivo(Boolean ativo) { this.ativo = ativo; }
+    public boolean isActive() { return ativo == null || ativo; }
 }

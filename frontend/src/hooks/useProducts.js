@@ -11,7 +11,9 @@ export function useProducts(role) {
 
   useEffect(() => {
     refresh().catch(() => setProducts([]));
-  }, []);
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, [role]);
 
   return { products, refresh };
 }

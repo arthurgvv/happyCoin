@@ -1,0 +1,181 @@
+@startuml DiagramaSequenciaGeral
+
+title Fluxo Geral do Sistema HappyCoin
+
+skinparam backgroundColor white
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceParticipantBorderThickness 1.2
+skinparam sequenceLifeLineBorderColor #111111
+skinparam sequenceLifeLineBackgroundColor white
+skinparam roundcorner 4
+skinparam responseMessageBelowArrow true
+
+actor "Instituicao" as Instituicao
+actor "Professor" as Professor
+actor "Aluno" as Aluno
+actor "Empresa" as Empresa
+
+boundary "Frontend\nReact" as Frontend
+control "AuthController" as AuthController
+control "InstitutionService" as InstitutionService
+control "ProfessorService" as ProfessorService
+control "ProductService" as ProductService
+control "PurchaseEventConsumer" as Consumer
+control "EmailService" as EmailService
+database "PostgreSQL" as DB
+
+== 1. Login ==
+
+Aluno -> Frontend ++: 1.1 realizarLogin()
+Professor -> Frontend: 1.1 realizarLogin()
+Empresa -> Frontend: 1.1 realizarLogin()
+Instituicao -> Frontend: 1.1 realizarLogin()
+
+Frontend -> AuthController ++: 1.2 autenticarUsuario()
+
+AuthController -> DB ++: 1.3 SELECT usuario por email/perfil
+DB --> AuthController --: 1.4 dadosUsuario
+
+AuthController -> DB ++: 1.5 criarSessao()
+DB --> AuthController --: 1.6 tokenSessao
+
+AuthController --> Frontend --: 1.7 loginValido()
+
+Frontend --> Aluno: 1.8 acessoLiberado()
+Frontend --> Professor: 1.8 acessoLiberado()
+Frontend --> Empresa: 1.8 acessoLiberado()
+Frontend --> Instituicao --: 1.8 acessoLiberado()
+
+||35||
+
+== 2. Instituicao gerencia professores ==
+
+Instituicao -> Frontend ++: 2.1 cadastrarProfessor()
+Frontend -> InstitutionService ++: 2.2 salvarProfessor()
+InstitutionService -> DB ++: 2.3 validarEmailCpfCursos()
+DB --> InstitutionService: 2.4 dadosValidos
+InstitutionService -> DB: 2.5 INSERT professor
+DB --> InstitutionService --: 2.6 professorRegistrado
+InstitutionService --> Frontend --: 2.7 operacaoConcluida()
+Frontend --> Instituicao --: 2.8 exibirSucesso()
+
+Instituicao -> Frontend ++: 2.9 iniciarSemestre()
+Frontend -> InstitutionService ++: 2.10 recarregarMoedas()
+InstitutionService -> DB ++: 2.11 buscarProfessoresInstituicao()
+DB --> InstitutionService: 2.12 listaProfessores
+loop para cada professor
+    InstitutionService -> DB: 2.13 adicionar1000Moedas()
+    DB --> InstitutionService: 2.14 saldoAtualizado
+end
+deactivate DB
+InstitutionService --> Frontend --: 2.15 semestreIniciado()
+Frontend --> Instituicao --: 2.16 exibirResultado()
+
+||35||
+
+== 3. Empresa cadastra vantagens ==
+
+Empresa -> Frontend ++: 3.1 cadastrarVantagem()
+Frontend -> ProductService ++: 3.2 salvarVantagem()
+ProductService -> DB ++: 3.3 validarEmpresa()
+DB --> ProductService: 3.4 empresaEncontrada
+ProductService -> DB: 3.5 INSERT product
+DB --> ProductService --: 3.6 vantagemRegistrada
+ProductService --> Frontend --: 3.7 operacaoConcluida()
+Frontend --> Empresa --: 3.8 exibirSucesso()
+
+||35||
+
+== 4. Professor distribui moedas ==
+
+Professor -> Frontend ++: 4.1 selecionarAluno()
+Professor -> Frontend: 4.2 informarQuantidadeEMotivo()
+
+Frontend -> ProfessorService ++: 4.3 enviarMoedas()
+
+ProfessorService -> DB ++: 4.4 consultarProfessorEAluno()
+DB --> ProfessorService: 4.5 dadosProfessorAluno
+
+ProfessorService -> ProfessorService: 4.6 validarSaldoCursoInstituicao()
+
+alt envio valido
+    ProfessorService -> DB: 4.7 debitarProfessor()
+    DB --> ProfessorService: 4.8 saldoProfessorAtualizado
+    ProfessorService -> DB: 4.9 creditarAluno()
+    DB --> ProfessorService: 4.10 saldoAlunoAtualizado
+    ProfessorService -> DB: 4.11 registrarTransferencia()
+    DB --> ProfessorService: 4.12 transferenciaRegistrada
+    ProfessorService -> DB: 4.13 registrarMensagem()
+    DB --> ProfessorService: 4.14 mensagemRegistrada
+    ProfessorService -> EmailService ++: 4.15 enviarEmailAluno()
+    EmailService --> ProfessorService --: 4.16 emailEnviado
+    ProfessorService --> Frontend: 4.17 operacaoConcluida()
+else envio invalido
+    ProfessorService --> Frontend: 4.18 erroValidacao()
+end
+
+deactivate DB
+deactivate ProfessorService
+Frontend --> Professor --: 4.19 exibirResultado()
+
+||35||
+
+== 5. Aluno consulta extrato ==
+
+Aluno -> Frontend ++: 5.1 consultarExtrato()
+Frontend -> AuthController ++: 5.2 validarSessao()
+AuthController --> Frontend --: 5.3 sessaoValida
+Frontend -> DB ++: 5.4 buscarTransferencias()
+DB --> Frontend: 5.5 dadosTransferencias
+Frontend -> DB: 5.6 buscarCompras()
+DB --> Frontend --: 5.7 dadosCompras
+Frontend --> Aluno --: 5.8 exibirExtrato()
+
+||35||
+
+== 6. Aluno resgata vantagem ==
+
+Aluno -> Frontend ++: 6.1 selecionarVantagem()
+Frontend -> ProductService ++: 6.2 resgatarVantagem()
+
+ProductService -> DB ++: 6.3 consultarProdutoAluno()
+DB --> ProductService: 6.4 dadosProdutoAluno
+
+ProductService -> ProductService: 6.5 verificarSaldoEstoque()
+
+alt saldo suficiente
+    ProductService -> DB: 6.6 debitarAluno()
+    DB --> ProductService: 6.7 saldoAtualizado
+    ProductService -> DB: 6.8 registrarResgate()
+    DB --> ProductService: 6.9 resgateRegistrado
+    ProductService -> DB: 6.10 gerarMensagemCupom()
+    DB --> ProductService: 6.11 cupomRegistrado
+    ProductService -> Consumer ++: 6.12 publicarNotificacao()
+    Consumer -> DB: 6.13 buscarResgateEmpresa()
+    DB --> Consumer: 6.14 dadosResgate
+    Consumer -> EmailService ++: 6.15 enviarEmailAlunoEmpresa()
+    EmailService --> Consumer --: 6.16 emailsEnviados
+    Consumer --> ProductService --: 6.17 notificacaoProcessada
+    ProductService --> Frontend: 6.18 retornarCupom()
+else saldo insuficiente
+    ProductService --> Frontend: 6.19 erroSaldoInsuficiente()
+end
+
+deactivate DB
+deactivate ProductService
+Frontend --> Aluno --: 6.20 exibirResultado()
+
+||35||
+
+== 7. Empresa acompanha resgates ==
+
+Empresa -> Frontend ++: 7.1 consultarResgates()
+Frontend -> ProductService ++: 7.2 listarResgatesEmpresa()
+ProductService -> DB ++: 7.3 SELECT product_purchases
+DB --> ProductService --: 7.4 listaResgates
+ProductService --> Frontend --: 7.5 resgatesEncontrados()
+
+Empresa -> Frontend: 7.6 conferirCodigoCupom()
+Frontend --> Empresa --: 7.7 exibirDadosDoResgate()
+
+@enduml

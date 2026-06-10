@@ -48,11 +48,15 @@ public class ProductService {
     }
 
     public List<Product> list() {
-        return productRepository.findAll();
+        return productRepository.findAll().stream()
+                .filter(Product::isActive)
+                .toList();
     }
 
     public List<Product> listByCompany(UUID companyId) {
-        return productRepository.findByCompanyId(companyId);
+        return productRepository.findByCompanyId(companyId).stream()
+                .filter(Product::isActive)
+                .toList();
     }
 
     public Product create(AuthSession session, ProductRequest request) {
@@ -100,7 +104,8 @@ public class ProductService {
             throw new ResponseStatusException(FORBIDDEN, "A empresa so pode remover produtos cadastrados por ela.");
         }
 
-        productRepository.delete(product);
+        product.setAtivo(false);
+        productRepository.save(product);
     }
 
     @Transactional
@@ -111,6 +116,10 @@ public class ProductService {
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Produto nao encontrado."));
+
+        if (!product.isActive()) {
+            throw new ResponseStatusException(NOT_FOUND, "Produto nao encontrado.");
+        }
 
         if (product.getQuantidade() != null && product.getQuantidade() == 0) {
             throw new ResponseStatusException(BAD_REQUEST, "Produto esgotado.");
@@ -201,6 +210,10 @@ public class ProductService {
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Produto nao encontrado."));
+
+        if (!product.isActive()) {
+            throw new ResponseStatusException(NOT_FOUND, "Produto nao encontrado.");
+        }
 
         if (product.getCompanyId() == null || !product.getCompanyId().equals(session.getUserId())) {
             throw new ResponseStatusException(FORBIDDEN, "A empresa so pode editar produtos cadastrados por ela.");

@@ -94,7 +94,10 @@ public class StudentService {
         Student student = findEntityById(id);
         student.setNome(validationService.text(request.getNome(), "Nome"));
         student.setEmail(validationService.text(request.getEmail(), "Email").toLowerCase());
-        student.setCpf(validationService.cpf(request.getCpf()));
+        String requestedCpf = onlyDigits(request.getCpf());
+        if (!requestedCpf.equals(student.getCpf())) {
+            student.setCpf(validationService.cpf(request.getCpf()));
+        }
         student.setRg(validationService.rg(request.getRg()));
         student.setEndereco(validationService.text(request.getEndereco(), "Endereco"));
         student.setInstituicao(resolveInstitutionName(request.getInstituicao()));
@@ -135,5 +138,9 @@ public class StudentService {
                 .filter(institution -> institution.getNome().equalsIgnoreCase(normalizedName))
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Instituicao de ensino nao cadastrada."));
+    }
+
+    private String onlyDigits(String value) {
+        return value == null ? "" : value.replaceAll("\\D", "");
     }
 }

@@ -55,6 +55,9 @@ ON CONFLICT DO NOTHING;
 -- ============================================================
 -- PRODUTOS (alguns vinculados a Empresa Demo)
 -- ============================================================
+UPDATE products SET version = 0 WHERE version IS NULL;
+UPDATE products SET ativo = TRUE WHERE ativo IS NULL;
+
 INSERT INTO products (id, nome, empresa_parceira, descricao, custo_moedas, image_url, company_id, version)
 VALUES
     ('00000003-0000-0000-0000-000000000001', 'Fundamentos da Arquitetura de Software', 'Editora Horizonte', 'Uma abordagem moderna para engenharia e arquitetura de software.',              180, '/assets/products/fundamentos-arquitetura-software.jpg', NULL,                                    0),

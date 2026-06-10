@@ -128,6 +128,10 @@ Company     ──1:N──► Product
 
 ### Diagramas
 
+| Diagrama de Sequencia Geral |
+| :---: |
+| <img src="docs/diagramas/sequencia/imagens/DiagramaSequenciaGeral.png" alt="Diagrama de Sequencia Geral" width="650px"> |
+
 | Diagrama de Classes | Diagrama de Componentes |
 | :---: | :---: |
 | <img src="docs/diagramas/classes/DiagramaDeClasses.png" alt="Diagrama de Classes" width="350px"> | <img src="docs/diagramas/componentes/DiagramaDeComponentes.png" alt="Diagrama de Componentes" width="350px"> |
