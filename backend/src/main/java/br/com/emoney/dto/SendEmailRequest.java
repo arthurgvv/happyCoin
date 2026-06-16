@@ -1,11 +1,20 @@
 package br.com.emoney.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.UUID;
 
 public class SendEmailRequest {
+    @NotNull
     private UUID studentId;
+
+    @NotBlank
     private String subject;
+
+    @NotBlank
     private String body;
+
     private UUID replyToId;
 
     public UUID getStudentId() { return studentId; }

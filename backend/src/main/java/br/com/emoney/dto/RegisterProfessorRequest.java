@@ -1,12 +1,30 @@
 package br.com.emoney.dto;
 
+import br.com.emoney.validation.ValidCpf;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+
 import java.util.List;
 
 public class RegisterProfessorRequest {
+    @NotBlank
     private String nome;
+
+    @NotBlank
+    @ValidCpf
     private String cpf;
+
+    @NotBlank
+    @Email
     private String email;
+
+    @NotBlank
+    @Size(min = 6)
     private String senha;
+
+    @NotEmpty
     private List<String> cursos;
 
     public RegisterProfessorRequest() {

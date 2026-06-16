@@ -84,13 +84,7 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
     event.preventDefault();
     setSubmitting(true);
     try {
-      await productService.create({
-        nome: form.nome,
-        descricao: form.descricao,
-        fotoUrl: form.fotoUrl,
-        custoMoedas: Number(form.custoMoedas),
-        quantidade: form.quantidade !== "" ? Number(form.quantidade) : null,
-      });
+      await productService.create(productPayloadFromForm(form));
       setForm(emptyProduct);
       await refresh();
       onToast({ message: "Produto cadastrado com sucesso.", type: "success" });
@@ -132,13 +126,7 @@ function CompanyPage({ user, onLogout, onUpdateUser, onToast }) {
     event.preventDefault();
     setSavingEdit(true);
     try {
-      await productService.update(editingProduct.id, {
-        nome: editForm.nome,
-        descricao: editForm.descricao,
-        fotoUrl: editForm.fotoUrl,
-        custoMoedas: Number(editForm.custoMoedas),
-        quantidade: editForm.quantidade !== "" ? Number(editForm.quantidade) : null,
-      });
+      await productService.update(editingProduct.id, productPayloadFromForm(editForm));
       setEditingProduct(null);
       await refresh();
       onToast({ message: "Produto atualizado com sucesso.", type: "success" });
@@ -860,6 +848,26 @@ function readFileAsDataUrl(file) {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+function productPayloadFromForm(values) {
+  const custoMoedas = Number(values.custoMoedas);
+  const quantidade = values.quantidade === "" ? null : Number(values.quantidade);
+
+  if (!Number.isInteger(custoMoedas) || custoMoedas <= 0) {
+    throw new Error("Custo em moedas deve ser um numero inteiro maior que zero.");
+  }
+  if (quantidade !== null && (!Number.isInteger(quantidade) || quantidade < 0)) {
+    throw new Error("Estoque deve ser um numero inteiro maior ou igual a zero.");
+  }
+
+  return {
+    nome: values.nome.trim(),
+    descricao: values.descricao.trim(),
+    fotoUrl: values.fotoUrl,
+    custoMoedas,
+    quantidade,
+  };
 }
 
 function CameraIcon() {

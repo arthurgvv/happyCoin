@@ -27,9 +27,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.argThat;
 
 @ExtendWith(MockitoExtension.class)
-class ProfessorServiceTest {
+class CoinTransferServiceTest {
 
     @Mock
     private ProfessorRepository professorRepository;
@@ -53,8 +54,9 @@ class ProfessorServiceTest {
     void rejectsTransferWhenStudentIsOutsideProfessorCourses() throws Exception {
         ValidationService validationService = new ValidationService();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordEncoder);
-        ProfessorService professorService = new ProfessorService(professorRepository, studentService, transferRepository, messageRepository, validationService, emailService, passwordEncoder);
+        PasswordService passwordService = new PasswordService(passwordEncoder);
+        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordService);
+        CoinTransferService coinTransferService = new CoinTransferService(professorRepository, studentService, transferRepository, messageRepository, validationService, emailService, new AuthorizationService());
 
         Institution institution = new Institution(
                 "PUC Minas",
@@ -97,7 +99,7 @@ class ProfessorServiceTest {
 
         AuthSession session = new AuthSession("token", professor.getId(), UserRole.PROFESSOR);
 
-        assertThatThrownBy(() -> professorService.transfer(session, request))
+        assertThatThrownBy(() -> coinTransferService.transfer(session, request))
                 .hasMessageContaining("cursos atribuidos");
         verify(messageRepository, never()).save(any(Message.class));
         verify(emailService, never()).sendCoinTransferConfirmation(professor, student, 50, "Participacao");
@@ -108,8 +110,9 @@ class ProfessorServiceTest {
     void sendsEmailsWhenTransferSucceeds() throws Exception {
         ValidationService validationService = new ValidationService();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordEncoder);
-        ProfessorService professorService = new ProfessorService(professorRepository, studentService, transferRepository, messageRepository, validationService, emailService, passwordEncoder);
+        PasswordService passwordService = new PasswordService(passwordEncoder);
+        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordService);
+        CoinTransferService coinTransferService = new CoinTransferService(professorRepository, studentService, transferRepository, messageRepository, validationService, emailService, new AuthorizationService());
 
         Institution institution = new Institution(
                 "PUC Minas",
@@ -152,11 +155,66 @@ class ProfessorServiceTest {
 
         AuthSession session = new AuthSession("token", professor.getId(), UserRole.PROFESSOR);
 
-        professorService.transfer(session, request);
+        coinTransferService.transfer(session, request);
 
-        verify(messageRepository).save(any(Message.class));
+        verify(professorRepository).save(professor);
+        verify(studentRepository).save(student);
+        verify(transferRepository).save(any());
+        verify(messageRepository).save(argThat(message ->
+                message.getFromId().equals(professor.getId())
+                        && message.getFromRole() == UserRole.PROFESSOR
+                        && message.getToId().equals(student.getId())
+                        && message.getToRole() == UserRole.STUDENT
+                        && "COIN_TRANSFER".equals(message.getType())
+        ));
         verify(emailService).sendCoinTransferConfirmation(professor, student, 50, "Participacao");
         verify(emailService).sendCoinReceivedNotification(professor, student, 50, "Participacao");
+    }
+
+    @Test
+    void rejectsTransferWhenProfessorHasInsufficientBalance() throws Exception {
+        ValidationService validationService = new ValidationService();
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        PasswordService passwordService = new PasswordService(passwordEncoder);
+        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordService);
+        CoinTransferService coinTransferService = new CoinTransferService(professorRepository, studentService, transferRepository, messageRepository, validationService, emailService, new AuthorizationService());
+
+        Institution institution = new Institution(
+                "PUC Minas",
+                "contato@pucminas.edu",
+                "senha123",
+                "3133334444",
+                "Av. Dom Jose Gaspar",
+                "12345678000199"
+        );
+
+        Professor professor = new Professor(
+                "Ana Souza",
+                "12345678901",
+                "ana@gmail.com",
+                "senha123",
+                institution.getId(),
+                List.of("Engenharia de Software"),
+                10
+        );
+
+        when(professorRepository.findById(professor.getId())).thenReturn(Optional.of(professor));
+
+        TransferCoinsRequest request = new TransferCoinsRequest();
+        setField(request, "studentId", java.util.UUID.randomUUID());
+        setField(request, "quantidade", 50);
+        setField(request, "motivo", "Participacao");
+
+        AuthSession session = new AuthSession("token", professor.getId(), UserRole.PROFESSOR);
+
+        assertThatThrownBy(() -> coinTransferService.transfer(session, request))
+                .hasMessageContaining("saldo suficiente");
+        verify(professorRepository, never()).save(any(Professor.class));
+        verify(studentRepository, never()).save(any(Student.class));
+        verify(transferRepository, never()).save(any());
+        verify(messageRepository, never()).save(any(Message.class));
+        verify(emailService, never()).sendCoinTransferConfirmation(any(), any(), any(Integer.class), any());
+        verify(emailService, never()).sendCoinReceivedNotification(any(), any(), any(Integer.class), any());
     }
 
     private static void setField(Object target, String fieldName, Object value) throws Exception {

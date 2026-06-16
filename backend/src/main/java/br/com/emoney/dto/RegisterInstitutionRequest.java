@@ -1,15 +1,37 @@
 package br.com.emoney.dto;
 
+import br.com.emoney.validation.ValidCnpj;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class RegisterInstitutionRequest {
+    @NotBlank
     private String nome;
+
+    @NotBlank
+    @Email
     private String email;
+
+    @NotBlank
+    @Size(min = 6)
     private String senha;
+
+    @NotBlank
     private String telefone;
+
+    @NotBlank
     private String endereco;
+
+    @NotBlank
+    @ValidCnpj
     private String identificadorInstitucional;
+
+    @Valid
     private List<RegisterProfessorRequest> professores = new ArrayList<>();
 
     public String getNome() {

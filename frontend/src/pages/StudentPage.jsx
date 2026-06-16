@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import AccountForm from "../components/AccountForm.jsx";
+import MailMessageBody from "../components/MailMessageBody.jsx";
 import Navbar from "../components/Navbar.jsx";
 import ProductGrid from "../components/ProductGrid.jsx";
 import QRCodeModal from "../components/QRCodeModal.jsx";
@@ -539,7 +540,7 @@ function StudentEmailSection({ onUnreadChange, onShowPurchaseQr }) {
             </p>
           </div>
           <div className="mail-read-body">
-            <p className="mail-read-text">{selected.body}</p>
+            <MailMessageBody message={selected} source={readSource} />
             {selected.type === "PURCHASE_COUPON" && selected.purchaseId && (
               <div className="mail-read-actions">
                 <button className="button button-primary" type="button" onClick={() => onShowPurchaseQr(selected.purchaseId)}>

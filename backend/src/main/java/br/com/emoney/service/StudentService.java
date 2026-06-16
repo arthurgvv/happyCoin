@@ -49,6 +49,7 @@ public class StudentService {
         String email = validationService.text(request.getEmail(), "Email").toLowerCase();
         String cpf = validationService.cpf(request.getCpf());
         String rg = validationService.rg(request.getRg());
+        Institution institution = findInstitutionByName(request.getInstituicao());
 
         if (studentRepository.findByEmail(email).isPresent()) {
             throw new ResponseStatusException(CONFLICT, "Ja existe aluno com este email.");
@@ -65,11 +66,11 @@ public class StudentService {
                 cpf,
                 rg,
                 validationService.text(request.getEndereco(), "Endereco"),
-                resolveInstitutionName(request.getInstituicao()),
+                institution.getNome(),
                 validationService.curso(request.getCurso()),
                 passwordService.encode(rawPassword)
         );
-        student.setInstitutionId(resolveInstitutionId(request.getInstituicao()));
+        student.setInstitutionId(institution.getId());
 
         return studentRepository.save(student);
     }
@@ -100,8 +101,9 @@ public class StudentService {
         }
         student.setRg(validationService.rg(request.getRg()));
         student.setEndereco(validationService.text(request.getEndereco(), "Endereco"));
-        student.setInstituicao(resolveInstitutionName(request.getInstituicao()));
-        student.setInstitutionId(resolveInstitutionId(request.getInstituicao()));
+        Institution institution = findInstitutionByName(request.getInstituicao());
+        student.setInstituicao(institution.getNome());
+        student.setInstitutionId(institution.getId());
         student.setCurso(validationService.curso(request.getCurso()));
 
         if (request.getSenha() != null && !request.getSenha().isBlank()) {
@@ -124,19 +126,9 @@ public class StudentService {
                 .toList();
     }
 
-    private UUID resolveInstitutionId(String institutionName) {
-        return findInstitutionByName(institutionName).getId();
-    }
-
-    private String resolveInstitutionName(String institutionName) {
-        return findInstitutionByName(institutionName).getNome();
-    }
-
     private Institution findInstitutionByName(String institutionName) {
         String normalizedName = validationService.instituicao(institutionName);
-        return institutionRepository.findAll().stream()
-                .filter(institution -> institution.getNome().equalsIgnoreCase(normalizedName))
-                .findFirst()
+        return institutionRepository.findByNomeIgnoreCase(normalizedName)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Instituicao de ensino nao cadastrada."));
     }
 

@@ -10,9 +10,10 @@ import br.com.emoney.dto.UpdateInstitutionRequest;
 import br.com.emoney.dto.UpdateProfessorRequest;
 import br.com.emoney.model.AuthSession;
 import br.com.emoney.model.Professor;
-import br.com.emoney.model.UserRole;
 import br.com.emoney.service.AuthService;
+import br.com.emoney.service.AuthorizationService;
 import br.com.emoney.service.InstitutionService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,22 +23,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
-
-import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @RestController
 @RequestMapping("/api/institutions")
 public class InstitutionController {
     private final AuthService authService;
     private final InstitutionService institutionService;
+    private final AuthorizationService authorizationService;
 
-    public InstitutionController(AuthService authService, InstitutionService institutionService) {
+    public InstitutionController(AuthService authService, InstitutionService institutionService,
+                                 AuthorizationService authorizationService) {
         this.authService = authService;
         this.institutionService = institutionService;
+        this.authorizationService = authorizationService;
     }
 
     @GetMapping("/me")
@@ -47,7 +48,7 @@ public class InstitutionController {
     }
 
     @PutMapping("/me")
-    public InstitutionResponse update(@RequestHeader("Authorization") String authorization, @RequestBody UpdateInstitutionRequest request) {
+    public InstitutionResponse update(@RequestHeader("Authorization") String authorization, @Valid @RequestBody UpdateInstitutionRequest request) {
         AuthSession session = requireInstitutionSession(authorization);
         return institutionService.update(session.getUserId(), request);
     }
@@ -59,14 +60,14 @@ public class InstitutionController {
     }
 
     @PostMapping("/me/professors")
-    public ProfessorResponse createProfessor(@RequestHeader("Authorization") String authorization, @RequestBody RegisterProfessorRequest request) {
+    public ProfessorResponse createProfessor(@RequestHeader("Authorization") String authorization, @Valid @RequestBody RegisterProfessorRequest request) {
         AuthSession session = requireInstitutionSession(authorization);
         Professor professor = institutionService.createProfessor(session.getUserId(), request, false);
         return new ProfessorResponse(professor);
     }
 
     @PutMapping("/me/professors/{professorId}")
-    public ProfessorResponse updateProfessor(@RequestHeader("Authorization") String authorization, @PathVariable UUID professorId, @RequestBody UpdateProfessorRequest request) {
+    public ProfessorResponse updateProfessor(@RequestHeader("Authorization") String authorization, @PathVariable UUID professorId, @Valid @RequestBody UpdateProfessorRequest request) {
         AuthSession session = requireInstitutionSession(authorization);
         return institutionService.updateProfessor(session.getUserId(), professorId, request);
     }
@@ -97,9 +98,7 @@ public class InstitutionController {
 
     private AuthSession requireInstitutionSession(String authorization) {
         AuthSession session = authService.requireSession(authorization);
-        if (session.getRole() != UserRole.INSTITUTION) {
-            throw new ResponseStatusException(FORBIDDEN, "Apenas instituicoes podem acessar esta area.");
-        }
+        authorizationService.requireInstitution(session);
         return session;
     }
 }

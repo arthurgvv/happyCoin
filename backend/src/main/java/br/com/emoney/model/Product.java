@@ -90,6 +90,15 @@ public class Product {
 
     public Integer getQuantidade() { return quantidade; }
     public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
+    public boolean hasStock() { return quantidade == null || quantidade > 0; }
+    public void reserveOne() {
+        if (!hasStock()) {
+            throw new IllegalStateException("Produto esgotado.");
+        }
+        if (quantidade != null) {
+            quantidade -= 1;
+        }
+    }
 
     public Boolean getAtivo() { return ativo; }
     public void setAtivo(Boolean ativo) { this.ativo = ativo; }

@@ -165,6 +165,23 @@ public class Student {
         return saldoMoedas;
     }
 
+    public void creditCoins(int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Quantidade deve ser maior que zero.");
+        }
+        saldoMoedas += amount;
+    }
+
+    public void debitCoins(int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Quantidade deve ser maior que zero.");
+        }
+        if (saldoMoedas < amount) {
+            throw new IllegalArgumentException("Aluno nao possui saldo suficiente.");
+        }
+        saldoMoedas -= amount;
+    }
+
     public void setSaldoMoedas(int saldoMoedas) {
         this.saldoMoedas = saldoMoedas;
     }

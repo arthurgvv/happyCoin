@@ -40,7 +40,8 @@ class InstitutionServiceTest {
     void registersInstitutionWithoutCreatingProfessorsFromRequest() {
         ValidationService validationService = new ValidationService();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        InstitutionService institutionService = new InstitutionService(institutionRepository, professorRepository, studentRepository, companyRepository, validationService, passwordEncoder);
+        PasswordService passwordService = new PasswordService(passwordEncoder);
+        InstitutionService institutionService = new InstitutionService(institutionRepository, professorRepository, studentRepository, companyRepository, validationService, passwordService);
 
         when(institutionRepository.findByEmail(anyString())).thenReturn(Optional.empty());
         when(institutionRepository.existsByIdentificadorInstitucional(anyString())).thenReturn(false);

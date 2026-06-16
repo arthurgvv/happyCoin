@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import MailMessageBody from "../components/MailMessageBody.jsx";
 import Navbar from "../components/Navbar.jsx";
 import { professorService } from "../services/professorService.js";
 
@@ -1052,7 +1053,7 @@ function EmailComposeSection({ professor, onUnreadChange }) {
             </p>
           </div>
           <div className="mail-read-body">
-            <p className="mail-read-text">{selected.body}</p>
+            <MailMessageBody message={selected} source={readSource} />
             {readSource === "inbox" && (
               <div className="mail-read-actions">
                 <button className="button button-primary" type="button" onClick={() => startReply(selected)}>Responder</button>
