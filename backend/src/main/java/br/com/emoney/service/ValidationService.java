@@ -46,9 +46,6 @@ public class ValidationService {
         if (digits.length() != 11) {
             throw new ResponseStatusException(BAD_REQUEST, "CPF deve possuir exatamente 11 digitos.");
         }
-        if (!BrazilianDocumentValidator.isValidCpf(digits)) {
-            throw new ResponseStatusException(BAD_REQUEST, "CPF invalido.");
-        }
         return digits;
     }
 

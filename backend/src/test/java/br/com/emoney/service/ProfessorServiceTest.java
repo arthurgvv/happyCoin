@@ -55,7 +55,7 @@ class CoinTransferServiceTest {
         ValidationService validationService = new ValidationService();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         PasswordService passwordService = new PasswordService(passwordEncoder);
-        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordService);
+        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordService, emailService);
         CoinTransferService coinTransferService = new CoinTransferService(professorRepository, studentService, transferRepository, messageRepository, validationService, emailService, new AuthorizationService());
 
         Institution institution = new Institution(
@@ -111,7 +111,7 @@ class CoinTransferServiceTest {
         ValidationService validationService = new ValidationService();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         PasswordService passwordService = new PasswordService(passwordEncoder);
-        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordService);
+        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordService, emailService);
         CoinTransferService coinTransferService = new CoinTransferService(professorRepository, studentService, transferRepository, messageRepository, validationService, emailService, new AuthorizationService());
 
         Institution institution = new Institution(
@@ -176,7 +176,7 @@ class CoinTransferServiceTest {
         ValidationService validationService = new ValidationService();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         PasswordService passwordService = new PasswordService(passwordEncoder);
-        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordService);
+        StudentService studentService = new StudentService(studentRepository, validationService, institutionRepository, passwordService, emailService);
         CoinTransferService coinTransferService = new CoinTransferService(professorRepository, studentService, transferRepository, messageRepository, validationService, emailService, new AuthorizationService());
 
         Institution institution = new Institution(

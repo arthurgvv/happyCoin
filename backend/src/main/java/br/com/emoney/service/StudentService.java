@@ -23,13 +23,16 @@ public class StudentService {
     private final ValidationService validationService;
     private final InstitutionRepository institutionRepository;
     private final PasswordService passwordService;
+    private final EmailService emailService;
 
     public StudentService(StudentRepository studentRepository, ValidationService validationService,
-                          InstitutionRepository institutionRepository, PasswordService passwordService) {
+                          InstitutionRepository institutionRepository, PasswordService passwordService,
+                          EmailService emailService) {
         this.studentRepository = studentRepository;
         this.validationService = validationService;
         this.institutionRepository = institutionRepository;
         this.passwordService = passwordService;
+        this.emailService = emailService;
     }
 
     public List<StudentResponse> list() {
@@ -72,7 +75,9 @@ public class StudentService {
         );
         student.setInstitutionId(institution.getId());
 
-        return studentRepository.save(student);
+        Student saved = studentRepository.save(student);
+        emailService.sendWelcomeStudent(saved, rawPassword);
+        return saved;
     }
 
     public Student authenticate(String email, String senha) {

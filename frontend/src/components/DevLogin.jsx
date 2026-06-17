@@ -31,16 +31,14 @@ function DevLogin({ onLogin }) {
     setLoading(account.email);
     try {
       const attempts = [{ email: account.email, senha: account.senha }, ...(account.fallbacks || [])];
-      let lastError;
       for (const credentials of attempts) {
         try {
           const ok = await onLogin(credentials);
           if (ok !== false) return;
-        } catch (error) {
-          lastError = error;
+        } catch {
+          // try next fallback
         }
       }
-      throw lastError;
     } finally {
       setLoading(null);
     }

@@ -1347,17 +1347,17 @@ tbody tr:last-child td { border-bottom: 0; }
 
 .institution-dir-table th:first-child,
 .institution-dir-table td:first-child {
-  width: 34%;
+  width: 40%;
 }
 
 .institution-dir-table th:nth-child(2),
 .institution-dir-table td:nth-child(2) {
-  width: 44%;
+  width: 32%;
 }
 
 .institution-dir-table th.balance-col,
 .institution-dir-table td.balance-col {
-  width: 22%;
+  width: 28%;
   text-align: center;
 }
 

@@ -1,4 +1,5 @@
 .m2/
 .tools/
 .claude/
+backend/src/main/resources/application-dev.properties
 

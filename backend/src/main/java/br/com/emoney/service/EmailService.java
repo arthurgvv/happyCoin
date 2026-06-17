@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,14 +30,17 @@ public class EmailService {
         this.from = from;
     }
 
+    @Async
     public void sendDirectMessage(Professor professor, Student student, String subject, String body) {
         send(student.getEmail(), subject, directMessageTemplate(professor, student, subject, body));
     }
 
+    @Async
     public void sendDirectMessage(Student student, Professor professor, String subject, String body) {
         send(professor.getEmail(), subject, directMessageFromStudentTemplate(student, professor, subject, body));
     }
 
+    @Async
     public void sendCoinTransferConfirmation(Professor professor, Student student, int quantidade, String motivo) {
         send(
                 professor.getEmail(),
@@ -45,6 +49,7 @@ public class EmailService {
         );
     }
 
+    @Async
     public void sendCoinReceivedNotification(Professor professor, Student student, int quantidade, String motivo) {
         send(
                 student.getEmail(),
@@ -53,12 +58,26 @@ public class EmailService {
         );
     }
 
+    @Async
+    public void sendWelcomeProfessor(Professor professor, String rawPassword) {
+        send(professor.getEmail(), "Bem-vindo ao HappyCoin - Suas credenciais de acesso",
+                welcomeProfessorTemplate(professor, rawPassword));
+    }
+
+    @Async
+    public void sendWelcomeStudent(Student student, String rawPassword) {
+        send(student.getEmail(), "Bem-vindo ao HappyCoin - Suas credenciais de acesso",
+                welcomeStudentTemplate(student, rawPassword));
+    }
+
+    @Async
     public void sendCouponEmailToStudent(String to, String studentName, String productName,
                                          UUID purchaseId, int custoMoedas, LocalDateTime dataResgate) {
         send(to, "Seu cupom de resgate - HappyCoin",
                 couponToStudentTemplate(studentName, productName, purchaseId, custoMoedas, dataResgate));
     }
 
+    @Async
     public void sendPurchaseNotificationToCompany(String to, String companyName, String studentName,
                                                    String productName, UUID purchaseId, int custoMoedas,
                                                    LocalDateTime dataResgate) {
@@ -465,6 +484,80 @@ public class EmailService {
                 saldoAtual,
                 escapeHtml(footerMessage)
         );
+    }
+
+    private String welcomeProfessorTemplate(Professor professor, String rawPassword) {
+        return """
+                <!doctype html>
+                <html lang="pt-BR">
+                <head><meta charset="UTF-8"><title>Bem-vindo ao HappyCoin</title></head>
+                <body style="margin:0;padding:0;background:#fff8f2;font-family:Arial,Helvetica,sans-serif;color:#201b11;">
+                  <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="background:#fff8f2;padding:32px 12px;">
+                    <tr><td align="center">
+                      <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="max-width:580px;">
+                        <tr><td style="background:#201b11;border-radius:12px 12px 0 0;padding:20px 28px;text-align:center;">
+                          <div style="font-size:22px;font-weight:900;color:#f4b91f;">HappyCoin</div>
+                        </td></tr>
+                        <tr><td style="background:#f4b91f;padding:18px 28px;">
+                          <h1 style="margin:0;font-size:20px;font-weight:900;color:#201b11;">Bem-vindo, %s!</h1>
+                          <p style="margin:4px 0 0;font-size:13px;color:#4a3c0a;">Sua conta de professor foi criada com sucesso.</p>
+                        </td></tr>
+                        <tr><td style="background:#ffffff;padding:28px;">
+                          <p style="margin:0 0 16px;font-size:15px;color:#201b11;">Suas credenciais de acesso ao HappyCoin:</p>
+                          <div style="background:#fff8f2;border:1px solid #f0d9b5;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+                            <p style="margin:0 0 8px;font-size:13px;color:#8a6e3a;font-weight:700;text-transform:uppercase;">Email</p>
+                            <p style="margin:0 0 16px;font-size:15px;font-weight:700;color:#201b11;">%s</p>
+                            <p style="margin:0 0 8px;font-size:13px;color:#8a6e3a;font-weight:700;text-transform:uppercase;">Senha provisória</p>
+                            <p style="margin:0;font-size:15px;font-weight:700;color:#201b11;">%s</p>
+                          </div>
+                          <p style="margin:0;font-size:13px;color:#6b5528;line-height:1.6;">Recomendamos alterar sua senha após o primeiro acesso em Configurações do perfil.</p>
+                        </td></tr>
+                        <tr><td style="background:#f5ebe0;border-radius:0 0 12px 12px;padding:16px 28px;text-align:center;">
+                          <p style="margin:0;font-size:12px;color:#8a7050;">Este e-mail foi enviado automaticamente pelo sistema HappyCoin.</p>
+                        </td></tr>
+                      </table>
+                    </td></tr>
+                  </table>
+                </body>
+                </html>
+                """.formatted(escapeHtml(professor.getNome()), escapeHtml(professor.getEmail()), escapeHtml(rawPassword));
+    }
+
+    private String welcomeStudentTemplate(Student student, String rawPassword) {
+        return """
+                <!doctype html>
+                <html lang="pt-BR">
+                <head><meta charset="UTF-8"><title>Bem-vindo ao HappyCoin</title></head>
+                <body style="margin:0;padding:0;background:#fff8f2;font-family:Arial,Helvetica,sans-serif;color:#201b11;">
+                  <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="background:#fff8f2;padding:32px 12px;">
+                    <tr><td align="center">
+                      <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="max-width:580px;">
+                        <tr><td style="background:#201b11;border-radius:12px 12px 0 0;padding:20px 28px;text-align:center;">
+                          <div style="font-size:22px;font-weight:900;color:#f4b91f;">HappyCoin</div>
+                        </td></tr>
+                        <tr><td style="background:#f4b91f;padding:18px 28px;">
+                          <h1 style="margin:0;font-size:20px;font-weight:900;color:#201b11;">Bem-vindo, %s!</h1>
+                          <p style="margin:4px 0 0;font-size:13px;color:#4a3c0a;">Sua conta de aluno foi criada com sucesso.</p>
+                        </td></tr>
+                        <tr><td style="background:#ffffff;padding:28px;">
+                          <p style="margin:0 0 16px;font-size:15px;color:#201b11;">Suas credenciais de acesso ao HappyCoin:</p>
+                          <div style="background:#fff8f2;border:1px solid #f0d9b5;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+                            <p style="margin:0 0 8px;font-size:13px;color:#8a6e3a;font-weight:700;text-transform:uppercase;">Email</p>
+                            <p style="margin:0 0 16px;font-size:15px;font-weight:700;color:#201b11;">%s</p>
+                            <p style="margin:0 0 8px;font-size:13px;color:#8a6e3a;font-weight:700;text-transform:uppercase;">Senha</p>
+                            <p style="margin:0;font-size:15px;font-weight:700;color:#201b11;">%s</p>
+                          </div>
+                          <p style="margin:0;font-size:13px;color:#6b5528;line-height:1.6;">Acesse o sistema com suas credenciais e comece a acumular HappyCoins!</p>
+                        </td></tr>
+                        <tr><td style="background:#f5ebe0;border-radius:0 0 12px 12px;padding:16px 28px;text-align:center;">
+                          <p style="margin:0;font-size:12px;color:#8a7050;">Este e-mail foi enviado automaticamente pelo sistema HappyCoin.</p>
+                        </td></tr>
+                      </table>
+                    </td></tr>
+                  </table>
+                </body>
+                </html>
+                """.formatted(escapeHtml(student.getNome()), escapeHtml(student.getEmail()), escapeHtml(rawPassword));
     }
 
     private String escapeHtml(String value) {

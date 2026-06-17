@@ -136,10 +136,9 @@ function AccountForm({ user, onSave, onToast }) {
                   <input
                     className="settings-input"
                     inputMode="numeric"
-                    maxLength="11"
-                    minLength="11"
-                    pattern="\d{11}"
-                    value={form.cpf}
+                    maxLength="14"
+                    placeholder="000.000.000-00"
+                    value={formatCpf(form.cpf)}
                     onChange={(event) => update("cpf", onlyDigits(event.target.value).slice(0, 11))}
                     required
                   />
@@ -244,6 +243,13 @@ function initials(name = "") {
 
 function onlyDigits(value) {
   return value.replace(/\D/g, "");
+}
+
+function formatCpf(digits) {
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9, 11)}`;
 }
 
 function readFileAsDataUrl(file) {

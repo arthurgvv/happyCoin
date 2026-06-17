@@ -34,16 +34,19 @@ public class InstitutionService {
     private final StudentRepository studentRepository;
     private final CompanyRepository companyRepository;
     private final PasswordService passwordService;
+    private final EmailService emailService;
 
     public InstitutionService(InstitutionRepository institutionRepository, ProfessorRepository professorRepository,
                                StudentRepository studentRepository, CompanyRepository companyRepository,
-                               ValidationService validationService, PasswordService passwordService) {
+                               ValidationService validationService, PasswordService passwordService,
+                               EmailService emailService) {
         this.institutionRepository = institutionRepository;
         this.professorRepository = professorRepository;
         this.studentRepository = studentRepository;
         this.companyRepository = companyRepository;
         this.validationService = validationService;
         this.passwordService = passwordService;
+        this.emailService = emailService;
     }
 
     public Institution create(RegisterInstitutionRequest request) {
@@ -102,6 +105,7 @@ public class InstitutionService {
         Professor savedProfessor = professorRepository.save(professor);
         institution.addProfessor(savedProfessor.getId());
         institutionRepository.save(institution);
+        emailService.sendWelcomeProfessor(savedProfessor, rawPassword);
         return savedProfessor;
     }
 

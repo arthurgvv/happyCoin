@@ -36,12 +36,15 @@ class InstitutionServiceTest {
     @Mock
     private CompanyRepository companyRepository;
 
+    @Mock
+    private EmailService emailService;
+
     @Test
     void registersInstitutionWithoutCreatingProfessorsFromRequest() {
         ValidationService validationService = new ValidationService();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         PasswordService passwordService = new PasswordService(passwordEncoder);
-        InstitutionService institutionService = new InstitutionService(institutionRepository, professorRepository, studentRepository, companyRepository, validationService, passwordService);
+        InstitutionService institutionService = new InstitutionService(institutionRepository, professorRepository, studentRepository, companyRepository, validationService, passwordService, emailService);
 
         when(institutionRepository.findByEmail(anyString())).thenReturn(Optional.empty());
         when(institutionRepository.existsByIdentificadorInstitucional(anyString())).thenReturn(false);

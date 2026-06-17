@@ -547,8 +547,8 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                 <input type="email" placeholder="email@pucminas.br" value={profForm.email} onChange={(e) => setProfForm((p) => ({ ...p, email: e.target.value }))} required />
               </label>
               <label>
-                CPF (11 digitos)
-                <input placeholder="000.000.000-00" value={profForm.cpf} maxLength={14} onChange={(e) => setProfForm((p) => ({ ...p, cpf: e.target.value }))} required />
+                CPF
+                <input inputMode="numeric" placeholder="000.000.000-00" value={formatCpf(profForm.cpf)} maxLength={14} onChange={(e) => setProfForm((p) => ({ ...p, cpf: onlyDigits(e.target.value).slice(0, 11) }))} required />
               </label>
               <label>
                 Senha provisoria
@@ -646,7 +646,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                                 ))}
                               </div>
                             </td>
-                            <td>
+                            <td className="balance-col">
                               <span className="coin-balance">
                                 <span className="coin-balance-icon">$</span>
                                 {(p.saldoMoedas ?? 0).toLocaleString("pt-BR")}
@@ -656,7 +656,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                               <div style={{ display: "flex", gap: "8px" }}>
                                 <button
                                   className="button"
-                                  style={{ padding: "5px 12px", fontSize: "0.8rem", background: "none", border: "1.5px solid var(--line)", borderRadius: "var(--radius-sm)" }}
+                                  style={{ padding: "5px 12px", fontSize: "0.8rem", background: "none", border: "1.5px solid var(--line)", borderRadius: "var(--radius-sm)", color: "var(--fg)" }}
                                   onClick={() => openEditProfessor(p)}
                                   title="Editar professor"
                                 >
@@ -805,7 +805,7 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
                                   </div>
                                 </div>
                               </td>
-                              <td>
+                              <td className="balance-col">
                                 <span className="balance-pill">
                                   <span className="balance-dot" />
                                   {(s.saldoMoedas || 0).toLocaleString("pt-BR")} moedas
@@ -1116,6 +1116,17 @@ function InstitutionPage({ user, onLogout, onUpdateUser, onToast }) {
       </main>
     </div>
   );
+}
+
+function onlyDigits(value) {
+  return value.replace(/\D/g, "");
+}
+
+function formatCpf(digits) {
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9, 11)}`;
 }
 
 function readFileAsDataUrl(file) {
